@@ -1,0 +1,21 @@
+{
+    "records": [
+        {
+            "name": "Rice",
+            "price": "23.2",
+            "description": "fsdssd",
+            "image": "https://casserole-wang-hot-pot.zinder.com.ng/v/1-3-2024/1714404921429-f9.jpg",
+            "status": "Active",
+            "token": "{\"iv\":\"2hyAqi8aq3mnC5fNn1Q4eQ==\",\"v\":1,\"iter\":10000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"zLulTKC3JQE=\",\"ct\":\"V6ajfk4/S0IhGG8CK+/JGhC37lP49XAqcLuAoG40DRxEpJ2l/B0iXq7MKXzVzs1663RkNzfiOtYlLWQ2qlM4YlU3Gg==\"}",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "browserVersion": "124.0.0.0",
+            "os": "Windows",
+            "osVersion": "windows-10",
+            "browser": "Chrome",
+            "deviceOrientation": "landscape",
+            "id": 3303075645,
+            "created_at": "2024-04-29T15:35:22.737Z",
+            "updated_at": "2024-04-29T15:35:22.737Z"
+        }
+    ]
+}

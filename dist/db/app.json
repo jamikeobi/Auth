@@ -1,0 +1,46 @@
+[
+  {
+    "short_name": "HR Solution",
+    "long_name": "Human Resource Solution App",
+    "status": "Active",
+    "code": "ZA-001",
+    "fee": 50000,
+    "icon": "assets/img/human-resources.png",
+    "created_at": "2023-06-09T22:40:10.840Z",
+    "updated_at": "2023-06-09T22:40:10.840Z",
+    "id": 1
+  },
+  {
+    "short_name": "AS App",
+    "long_name": "Accounting App",
+    "code": "ZA-002",
+    "fee": 45000,
+    "status": "Active",
+    "icon": "assets/img/Accounting-Design-Logo-Templates.jpg",
+    "created_at": "2023-06-09T22:40:10.840Z",
+    "updated_at": "2023-06-09T22:40:10.840Z",
+    "id": 3
+  },
+  {
+    "short_name": "AM App",
+    "long_name": "Assets Management Solution",
+    "status": "Active",
+    "code": "ZA-003",
+    "fee": 35000,
+    "icon": "assets/img/assetmsmanagm.jpg",
+    "created_at": "2023-06-09T22:40:10.840Z",
+    "updated_at": "2023-06-09T22:40:10.840Z",
+    "id": 4
+  },
+  {
+    "short_name": "Church Solution",
+    "long_name": "Church Solution App",
+    "status": "Active",
+    "code": "ZA-004",
+    "fee": 32000,
+    "icon": "assets/img/ChurchFlo.jpg",
+    "created_at": "2023-06-09T22:40:10.840Z",
+    "updated_at": "2023-06-09T22:40:10.840Z",
+    "id": 5
+  }
+]

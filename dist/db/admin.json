@@ -1,0 +1,27 @@
+{
+    "records": [
+        {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "os": "Windows",
+            "browser": "Chrome",
+            "device": "Unknown",
+            "os_version": "windows-10",
+            "browser_version": "124.0.0.0",
+            "deviceType": "desktop",
+            "orientation": "landscape",
+            "id": "YYnmkUvLCFVj0RRkAAAD",
+            "status": "connected",
+            "email": "info@morrhtechsolutions.com",
+            "emailStatus": false,
+            "tokenStatus": false,
+            "token": "{\"iv\":\"2hyAqi8aq3mnC5fNn1Q4eQ==\",\"v\":1,\"iter\":10000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"zLulTKC3JQE=\",\"ct\":\"V6ajfk4/S0IhGG8CK+/JGhC37lP49XAqcLuAoG40DRxEpJ2l/B0iXq7MKXzVzs1663RkNzfiOtYlLWQ2qlM4YlU3Gg==\"}",
+            "socket": "YYnmkUvLCFVj0RRkAAAD",
+            "message": "Requesting Authentication",
+            "codeToken": "{\"iv\":\"+pai5G4le/klOxiTNud0YQ==\",\"v\":1,\"iter\":10000,\"ks\":128,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"zLulTKC3JQE=\",\"ct\":\"awn7/NQvfQRNpo9QncOdWfIMSIzLhOEcyKkbCXfwE5MuJZVo92jQa+N9EgvzkfOIkdmldQnSiTgnFFBJiH5Dhi56BhQO3cicBJiXPucdRvidgrxIUw3TLR1G9A==\"}",
+            "codehash": "2e517818323611b9ebbea04f41194f6e355e2c0647197c4f9a0567e3c24e9321",
+            "codeString": "{\"email\":\"info@morrhtechsolutions.com\",\"timestamp\":1714404872442,\"expires\":3600000}",
+            "codeToMail": 710579125,
+            "updated_at": "2024-04-29T15:34:41.099Z"
+        }
+    ]
+}
