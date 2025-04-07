@@ -1,0 +1,29 @@
+
+
+<form action="#">
+  <h1 *ngIf="!user">Sign in</h1>
+  <h1 *ngIf="user && user.status==1">Two Factor</h1>
+  <!-- <div class="social-container"  *ngIf="!user">
+    <a href="javascript:void(0)" class="social"><i class="fab fa-facebook-f"></i></a>
+    <a href="javascript:void(0)" class="social"><i class="fab fa-google-plus-g"></i></a>
+    <a href="javascript:void(0)" class="social"><i class="fab fa-linkedin-in"></i></a>
+  </div> -->
+  <span *ngIf="!user">using email and password</span>
+  <span *ngIf="user && user.status==1">Check {{getMaskedEmail(user.email)}} for verification code</span>
+  <input type="email" placeholder="Email" [ngClass]="{ 'error-border': emailError }"
+  (focus)="resetError('email')"
+  [(ngModel)]="email" name="email"
+  *ngIf="!user"
+ />
+  <input type="password" placeholder="Password" [ngClass]="{ 'error-border': passwordError }"
+  (focus)="resetError('password')" *ngIf="!user"
+  [(ngModel)]="password" name="password"  />
+
+  <input type="number" placeholder="Code" [ngClass]="{ 'error-border': codeError }"
+  (focus)="resetError('code')" *ngIf="user && user.status==0"
+  [(ngModel)]="code" name="code"  />
+  <a href="javascript:void(0)" *ngIf="!user">Get Device Information</a>
+  <button (click)="submit()" *ngIf="!user">Sign In</button>
+  <button (click)="verify()" *ngIf="user && user.status==0">Verify</button>
+  <a href="javascript:void(0)" (click)="reset()" *ngIf="user">Change Email</a>
+</form>

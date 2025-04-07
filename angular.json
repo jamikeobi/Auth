@@ -1,0 +1,170 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "analytics": "91260950-7d2e-4d95-98c6-4f7cc95fea3b"
+  },
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "public": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        },
+        "@schematics/angular:application": {
+          "strict": true
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/public",
+            "index": "src/index.html",
+            "main": "src/main.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css",
+              "src/assets/vendors/styles/icon-font.min.css",
+              "src/assets/src/plugins/switchery/switchery.min.css",
+              "src/assets/src/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css",
+              "src/assets/src/plugins/bootstrap-touchspin/jquery.bootstrap-touchspin.css",
+              "src/assets/src/plugins/fullcalendar/fullcalendar.css",
+              "src/assets/src/plugins/datatables/css/dataTables.bootstrap4.min.css",
+              "src/assets/src/plugins/datatables/css/responsive.bootstrap4.min.css",
+              "src/assets/src/plugins/jquery-steps/jquery.steps.css",
+              "src/assets/src/plugins/fancybox/dist/jquery.fancybox.css",
+              "src/assets/vendors/styles/smart_wizard_all.min.css",
+              "src/assets/vendors/styles/jquery.dataTables.min.css",
+              "src/assets/lib/bootstrap/4.4.1/css/bootstrap.min.css",
+              "src/assets/lib/font-awesome/5.10.0/css/all.min.css",
+              "src/assets/lib/owlcarousel/assets/owl.carousel.min.css",
+              "src/assets/css/fontawesome.css",
+              "src/assets/css/spinner.css",
+              "src/assets/css/theme.css",
+              "src/assets/vendor/bs/css/bootstrap.min.css",
+              "src/assets/vendor/bootstrap-icons/bootstrap-icons.css",
+              "src/assets/vendor/boxicons/css/boxicons.min.css",
+              "src/assets/vendor/quill/quill.snow.css",
+              "src/assets/vendor/quill/quill.bubble.css",
+              "src/assets/vendor/remixicon/remixicon.css",
+              "src/assets/vendor/simple-datatables/style.css",
+              "src/assets/css/style.css",
+              "src/styles.scss"
+            ],
+            "scripts": [
+              "src/assets/vendors/scripts/jq.min.js",
+              "src/assets/src/scripts/jquery.min.js",
+              "src/assets/vendors/scripts/core.js",
+              "src/assets/vendors/@popperjs/popper.min.js",
+              "src/assets/vendors/is/is.min.js",
+              "src/assets/vendors/fontawesome/all.min.js",
+              "src/assets/vendors/scripts/layout-settings.js",
+              "src/assets/src/plugins/switchery/switchery.min.js",
+              "src/assets/src/plugins/bootstrap-tagsinput/bootstrap-tagsinput.js",
+              "src/assets/src/plugins/bootstrap-touchspin/jquery.bootstrap-touchspin.js",
+              "src/assets/src/plugins/fancybox/dist/jquery.fancybox.js",
+              "src/assets/src/plugins/jquery-steps/jquery.steps.js",
+              "src/assets/src/plugins/fullcalendar/fullcalendar.min.js",
+              "src/assets/src/plugins/apexcharts/apexcharts.min.js",
+              "src/assets/lib/bootstrap/4.4.1/js/bootstrap.bundle.min.js",
+              "src/assets/vendor/bs/js/bootstrap.bundle.min.js",
+              "src/assets/vendor/chart.js/chart.umd.js",
+              "src/assets/vendor/echarts/echarts.min.js",
+              "src/assets/vendor/quill/quill.js",
+              "src/assets/vendor/simple-datatables/simple-datatables.js",
+              "src/assets/vendor/tinymce/tinymce.min.js",
+              "src/assets/vendor/php-email-form/validate.js",
+              "src/assets/vendors/scripts/jquery.smartWizard.min.js",
+              "src/assets/lib/owlcarousel/owl.carousel.min.js",
+              "src/assets/lib/isotope/isotope.pkgd.min.js",
+              "src/assets/lib/lightbox/js/lightbox.min.js",
+              "src/assets/vendor/tilt/tilt.jquery.min.js",
+              "src/assets/js/main.js"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5mb",
+                  "maximumError": "10mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "100kb",
+                  "maximumError": "100kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "public:build:production"
+            },
+            "development": {
+              "browserTarget": "public:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "public:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css",
+              "src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
+  },
+  "defaultProject": "public"
+}

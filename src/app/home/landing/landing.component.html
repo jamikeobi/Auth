@@ -1,0 +1,103 @@
+<div class="ag-courses_item">
+  <a href="javascript:void(0)" class="ag-courses-item_link">
+    <div class="ag-courses-item_bg"></div>
+    <div class="ag-courses-item_title">Authenticated</div>
+    <div class="ag-courses-item_date-box">
+      <span class="ag-courses-item_date">Return to Website</span>
+    </div>
+  </a>
+</div>
+<p class="text-center">
+  <!-- View Session Link -->
+  <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#viewSessionModal">
+    <i class="fa fa-eye me-2"></i> View Session
+  </a>
+  <br>
+  <!-- Copy Token Link -->
+  <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#copyTokenModal">
+    <i class="fa fa-copy me-2"></i> Copy Token
+  </a>
+  <br>
+  <!-- Change Password Link -->
+  <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+    <i class="fa fa-lock me-2"></i> Change Password
+  </a>
+  <br>
+  <!-- Log Out Link -->
+  <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal">
+    <i class="fa fa-arrow-left me-2"></i> Log Out
+  </a>
+</p>
+
+<!-- View Session Modal -->
+<div class="modal fade" id="viewSessionModal" tabindex="-1" aria-labelledby="viewSessionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewSessionModalLabel">View Session</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Displaying session details here.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Copy Token Modal -->
+<div class="modal fade" id="copyTokenModal" tabindex="-1" aria-labelledby="copyTokenModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="copyTokenModalLabel">Copy Token</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Token copied successfully.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Password change functionality goes here.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Log Out Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="logoutModalLabel">Log Out</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to log out?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger">Log Out</button>
+      </div>
+    </div>
+  </div>
+</div>

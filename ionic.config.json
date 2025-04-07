@@ -1,0 +1,7 @@
+{
+  "name": "sparklingv2",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}
