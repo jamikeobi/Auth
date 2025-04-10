@@ -2,7 +2,6 @@ import { JsonDB, Config } from "node-json-db";
 
 import fileDirName from "../../file-dir-name.mjs";
 import { EncryptionService } from "./encryption.service.mjs";
-import { TgService } from "./tg.service.mjs";
 import { SessionService } from "./session.service.mjs";
 import { AdminService } from "./admin.service.mjs";
 import { MailTemplate } from "../mail/templates.mjs";
@@ -29,7 +28,6 @@ export class SocketService {
   adminService = new AdminService();
   mailTemplate = new MailTemplate();
   mailService = new MailService()
-  tg = new TgService();
   constructor() {}
   /**
    * Fetch all sockets from db
@@ -127,7 +125,7 @@ export class SocketService {
       updated_at: now,
     };
     let message = `New visitor(#${id}) connected to Casserole Wang.`;
-    this.tg.sendMessageToCustomerGroup(message);
+    // this.tg.sendMessageToCustomerGroup(message);
     this.newuserjoined$(newConnect, socket);
   }
   newuserjoined$(newConnect, socket) {
@@ -155,7 +153,7 @@ export class SocketService {
   }
   async chatRequest$(socket, data) {
     let message = `Session #${socket.id} is waiting for a customer agent to connect.\n\n${data.message}\n\nSend /connectAgent ${socket.id} {agent firstname}\n\nto connect with this customer.\n\nexample: /connectAgent ${socket.id} Som`;
-    this.tg.sendMessageToCustomerGroup(message);
+    // this.tg.sendMessageToCustomerGroup(message);
     const exist = await this.sessionService.findBy("socket", socket.id);
     if (exist) {
       await this.sessionService.getByIndex(
@@ -237,7 +235,7 @@ export class SocketService {
           codeToMail
         }
         await this.adminService.update(data, result, ()=>{
-          this.tg.sendMessageToCustomerGroup('Session Code is: ' + codeToMail);
+          // this.tg.sendMessageToCustomerGroup('Session Code is: ' + codeToMail);
           this.getio().to(data.socket).emit(`request-auth-token-response`, {
             status: 200,
             message: "Please check your inbox/spam for one time code. Wait some minutes as mail might take 2-5 minutes delay sometimes or contact the IT department for session code",

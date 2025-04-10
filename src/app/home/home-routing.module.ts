@@ -2,22 +2,28 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { IndexComponent } from './index/index.component';
 import { LandingComponent } from './landing/landing.component';
+import { AuthGuard } from '../shared/guards/auth/auth.guard';
+import { GuestGuard } from '../shared/guards/auth/guest.guard';
 const routes: Routes = [
   {
     path: '',
-    component: IndexComponent
+    component: IndexComponent,
+    canActivate: [GuestGuard]
   },
   {
     path: 'login',
-    component: IndexComponent
+    component: IndexComponent,
+    canActivate: [GuestGuard]
   },
   {
     path: 'register',
-    component: IndexComponent
+    component: IndexComponent,
+    canActivate: [GuestGuard]
   },
   {
     path: 'landing',
-    component: LandingComponent
+    component: LandingComponent,
+    canActivate: [AuthGuard]
   },
 
 ];

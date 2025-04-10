@@ -39,7 +39,7 @@ export class AuthService {
    * @param data is the new record to save.
    * @returns Object
    */
-  async save(data, cb) {
+  async save(data) {
     const now = new Date(Date.now());
     // Set the id property to the length of existing record + 1
     let id = this.encryptService.hashFnv32a(
@@ -58,26 +58,14 @@ export class AuthService {
     data.session = [];
     data.verify_sign = this.encryptService.hashFnv32a(`${id}`, false, now);
     await this.db.push("/records[]", data);
-    const template = this.mailTemplate.onetimecode(data.verify_sign);
-    cb(data);
-    try {
-      const dispatch = await this.mailService.send(
-        `Auth Confirmation - Auth #${data.id}`,
-        data.email,
-        template,
-        [ADMIN_EMAIL]
-      );
-    } catch (error) {
-      console.log(error);
-    }
-    // return cb(data);
+    return data;
   }
   async attempt(user, data) {
-    console.log('Attempting')
     const now = new Date();
 
     // Validate password
     const decryptedPassword = this.encryptService.decryptSha256(user.password);
+    console.log(decryptedPassword, data.password);
     if (data.password !== decryptedPassword || user.email !== data.email) {
         return {}; // Return an empty object if authentication fails
     }
@@ -121,10 +109,10 @@ export class AuthService {
     );
     return cb(found);
   }
-  async getByIndex(field, value, cb) {
+  async getByIndex(field, value) {
     const auths = await this.auths();
     const found = auths.findIndex((u) => u[field] == value);
-    return cb(found);
+    return found;
   }
   /**
    * Find User Record

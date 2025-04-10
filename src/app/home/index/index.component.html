@@ -1,7 +1,7 @@
+
 <h2 class="mt-10"><i class="fa fa-lock secure"></i></h2>
-
-
 <div class="container" id="container" *ngIf="!loggedIn">
+  <ngx-spinner></ngx-spinner>
 	<div class="form-container sign-up-container">
 		<form action="#">
 			<h1>Create Account</h1>
@@ -42,8 +42,4 @@
 </div>
 <app-landing *ngIf="loggedIn"></app-landing>
 
-<footer>
-	<p>
-		Connected <i class="fa fa-lock secure"></i>
-	</p>
-</footer>
+<app-footer></app-footer>

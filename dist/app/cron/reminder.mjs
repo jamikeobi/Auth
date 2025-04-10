@@ -4,8 +4,6 @@ import fs from "fs";
 import fileDirName from "../../file-dir-name.mjs";
 import { MailService } from "../service/mail.service.mjs";
 import dotenv from "dotenv";
-import { TelegramController } from "../controller/telegram.controller.mjs";
-import bot from "../service/telegram.service.mjs";
 dotenv.config();
 const { __dirname } = fileDirName(import.meta);
 const DBPATH = "/../../db/records.json";
@@ -350,7 +348,7 @@ ul.social li{
 	      </tr><!-- end tr -->
       <!-- 1 Column Text + Button : END -->
       </table>
-      
+
 
     </div>
   </center>
@@ -365,7 +363,6 @@ export default remindercons.schedule("*/5 * * * *", async () => {
   const dbJson = fs.readFileSync(path.join(DB));
   const events = JSON.parse(dbJson).events;
   //   console.log(events);
-  const reprt = await reportUsers();
 
   eventToPublicsh = events.filter((e) => {
     let startime = new Date(e.start);
@@ -431,30 +428,3 @@ function updateEvent(remind) {
   );
   console.log(events);
 }
-
-async function reportUsers() {
-	let now = new Date(Date.now())
-  const dbJson = fs.readFileSync(path.join(DB));
-//   const users = DB.users;
-  const users = JSON.parse(dbJson).users;
-  const chatId = process.env.TELEGRAM_MASTERCHATID;
-  console.log(chatId);
-  console.log(users);
-  let message = `Users (${users.length})\n`;
-  for(let i=0;i<users.reverse().length;i++){
-	let user = users[i];
-	message+=`#${i+1}\n`
-	for (const [key, value] of Object.entries(user)) {
-		const v = value;
-		message+=`${key.replace('_', ' ').toLocaleLowerCase()}: ${v}\n`;
-	  }
-	  message+=`\n\n\nSent Backup At: ${now.toLocaleTimeString()}, ${now.toLocaleDateString()}`;
-  }
-//   let tc = new TelegramController();
-	return await bot.sendMessage(chatId, `${message}`  );
-	// const file = await bot.getFile(DB);
-        // const file = await bot.downloadFile('records.json',dbdir);
-        // console.log(file)
-        // return await bot.sendDocument(chatId, DB);
-}
- 

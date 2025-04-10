@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/shared/services/auth/auth.service';
 import { DeviceService } from 'src/app/shared/services/client/device.service';
 
@@ -8,88 +9,80 @@ import { DeviceService } from 'src/app/shared/services/client/device.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-  email: string = ''; // access to form email
-  password: string = ''; // access to form password
-  code: string = ''; // access to form code
-  errors: string[] = []; // array to store error messages
-  emailError: boolean = false; // state for email error
-  passwordError: boolean = false; // state for password error
-  codeError: boolean = false; // state for code error
+  email: string = '';
+  password: string = '';
+  code: string = '';
+  isFirstTimeUser: boolean = false; // New property for checkbox
+  errors: string[] = [];
+  emailError: boolean = false;
+  passwordError: boolean = false;
+  codeError: boolean = false;
+  user: any = null;
 
-  user:any = null;
-  constructor(private deviceService:DeviceService, private authService:AuthService) {}
+  private emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  private passwordPattern: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+  constructor(
+    private deviceService: DeviceService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {}
 
-  // Sign-in trigger
-  submit() {
-    // Clear previous errors
-    this.errors = [];
-    this.emailError = false;
-    this.codeError = false;
-    this.passwordError = false;
+  submit(): void {
+    this.resetErrors();
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation pattern
-    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
-
-    // Validate email
-    if (!emailPattern.test(this.email)) {
+    if (!this.emailPattern.test(this.email)) {
       this.emailError = true;
       this.errors.push('Invalid email format');
     }
 
-    // Validate password
-    if (!passwordPattern.test(this.password)){
-    this.passwordError = true;
+    if (!this.passwordPattern.test(this.password)) {
+      this.passwordError = true;
       this.errors.push(
         'Password must be at least 6 characters long, contain one uppercase letter, one number, and one special character'
       );
     }
 
-    // Check for errors
     if (this.errors.length > 0) {
-      this.deviceService.openInfoNotification('Oops', this.errors.toLocaleString())
-      console.error('Errors:', this.errors);
+      this.deviceService.openInfoNotification('Oops', this.errors.join(', '));
       return;
     }
-    this.authService.login({email:this.email, password: this.password}).subscribe(
-      (res:any)=>{
-        console.log(res)
-        if(!res.data.id){
-          this.deviceService.oErrorNotification('Oops', 'Incorrect email/password');
-          this.passwordError = true;
-          this.emailError = true;
-        }else{
-          this.user = res.data;
-        }
-      }
-    )
 
-    // If validation passes
-    console.log('Form submitted successfully');
-    console.log('Email:', this.email);
-    console.log('Password:', this.password);
+    this.deviceService.showSpinner();
+    this.authService.login({ 
+      email: this.email, 
+      password: this.password,
+      isFirstTimeUser: this.isFirstTimeUser // Include checkbox value in payload
+    }).subscribe({
+      next: (res: any) => {
+        console.log('User logged in:', res.data);
+        this.user = res.data;
+          this.authService.setLoginType('traditional');
+          this.authService.setAuthState(true);
+          this.router.navigate(['/landing']).finally(() => 
+            this.deviceService.oSuccessNotification('Success', 'Login successful!')
+          );
+      },
+      error: () => this.deviceService.hideSpinner(),
+      complete: () => this.deviceService.hideSpinner()
+    });
   }
-  verify() {
-    // Clear previous errors
-    this.errors = [];
-    this.emailError = false;
-    this.codeError = false;
-    this.passwordError = false;
 
-    // Check for errors
+  verify(): void {
+    this.resetErrors();
+
     if (this.errors.length > 0) {
-      this.deviceService.openInfoNotification('Oops', this.errors.toLocaleString())
-      console.error('Errors:', this.errors);
+      this.deviceService.openInfoNotification('Oops', this.errors.join(', '));
       return;
     }
 
-    // If validation passes
     console.log('Form submitted successfully');
     console.log('Code:', this.code);
   }
-   // Reset error on input focus
-   resetError(field: string) {
+
+  resetError(field: string): void {
     if (field === 'email') {
       this.emailError = false;
     } else if (field === 'password') {
@@ -98,6 +91,7 @@ export class LoginComponent implements OnInit {
       this.codeError = false;
     }
   }
+
   getMaskedEmail(email: string): string {
     const [localPart, domain] = email.split('@');
     const maskedLocalPart = localPart.length > 4
@@ -105,14 +99,23 @@ export class LoginComponent implements OnInit {
       : localPart + '****';
     return `${maskedLocalPart}@${domain}`;
   }
-  reset(){
+
+  reset(): void {
     this.email = '';
     this.password = '';
-    this.errors = [];
     this.code = '';
+    this.isFirstTimeUser = false; // Reset checkbox state
+    this.errors = [];
     this.emailError = false;
     this.passwordError = false;
     this.codeError = false;
     this.user = null;
+  }
+
+  private resetErrors(): void {
+    this.errors = [];
+    this.emailError = false;
+    this.codeError = false;
+    this.passwordError = false;
   }
 }
