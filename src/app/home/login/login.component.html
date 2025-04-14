@@ -1,4 +1,4 @@
-<form action="#">
+<form action="#" autocomplete="off">
   <h1 *ngIf="!user">Sign in</h1>
   <h1 *ngIf="user && user.status==1">Two Factor</h1>
   <span *ngIf="!user">using email and password</span>
@@ -12,17 +12,20 @@
     [(ngModel)]="email" 
     name="email"
     *ngIf="!user"
+    autocomplete="off"
   />
   
   <input 
-    type="password" 
+    name="password" 
     placeholder="Password" 
     [ngClass]="{ 'error-border': passwordError }"
     (focus)="resetError('password')" 
     *ngIf="!user"
     [(ngModel)]="password" 
-    name="password"
+    [type]="passwordVisibility!='Show' ?'text':'password' "
+    autocomplete="off"
   />
+  <a href="javascript:void()" (click)="togglepasswordVisibility()" class="maxwidth">{{passwordVisibility}} Password</a>
 
   <!-- Add First Time User checkbox -->
   <div class="checkbox-container" *ngIf="!user">

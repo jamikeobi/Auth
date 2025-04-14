@@ -11,6 +11,7 @@ import { DeviceService } from 'src/app/shared/services/client/device.service';
 export class LoginComponent implements OnInit {
   email: string = '';
   password: string = '';
+  passwordVisibility: string = 'Show';
   code: string = '';
   isFirstTimeUser: boolean = false; // New property for checkbox
   errors: string[] = [];
@@ -110,6 +111,9 @@ export class LoginComponent implements OnInit {
     this.passwordError = false;
     this.codeError = false;
     this.user = null;
+  }
+  togglepasswordVisibility(){
+    this.passwordVisibility = this.passwordVisibility === 'Show'? 'Hide' : 'Show';
   }
 
   private resetErrors(): void {

@@ -26,8 +26,9 @@ export class RegisterComponent implements OnInit {
   async submit()  {
     // Clear previous errors
     this.errors = [];
+    this.deviceService.showSpinner();
     await this.web3Service.connectAccount();
-
+    this.deviceService.hideSpinner();
     // Check for errors
     // if (this.errors.length > 0) {
     //   this.deviceService.openInfoNotification('Oops', this.errors.toLocaleString())

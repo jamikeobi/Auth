@@ -32,7 +32,7 @@ form {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    background-color: #007bff;
+    background-color: #ff4553;
     color: white;
     border: none;
     border-radius: 4px;
@@ -42,4 +42,8 @@ form {
   .error-border {
     border-color: red;
   }
+}
+.maxwidth{
+  width: 100%;
+  text-align: right;
 }

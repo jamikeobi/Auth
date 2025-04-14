@@ -4,6 +4,7 @@ import Web3 from 'web3';
 
 import { Injectable } from '@angular/core';
 import detectEthereumProvider from '@metamask/detect-provider';
+import { DeviceService } from '../client/device.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class Web3Service {
   private account: string | null = null;
   accounts:BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
 
-  constructor() {
+  constructor(private ds:DeviceService) {
 
   }
 
@@ -23,10 +24,12 @@ export class Web3Service {
       this.web3 = new Web3(provider);
       await this.loadAccount();
       provider.on('accountsChanged', async (accounts: string[]) => {
+        console.log(accounts)
         this.account = accounts[0];
       });
     } else {
       console.error('Please install MetaMask!');
+      this.ds.oErrorNotification('No ERC Wallet', 'No ERC Wallet installed. Please install MetaMask to use this application.');
     }
   }
 
@@ -49,8 +52,9 @@ export class Web3Service {
       }
       this.account = accounts ? accounts[0] : null;
       return this.account;
-    } catch (error) {
+    } catch (error:any) {
       console.error('Error connecting to MetaMask', error);
+      this.ds.oErrorNotification(`Error ${error.code}`, error.message);
       return null;
     }
   }

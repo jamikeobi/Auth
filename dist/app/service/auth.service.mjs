@@ -55,7 +55,6 @@ export class AuthService {
 
     // Set the active property
     data.status = 0;
-    data.session = [];
     data.verify_sign = this.encryptService.hashFnv32a(`${id}`, false, now);
     await this.db.push("/records[]", data);
     return data;
@@ -75,9 +74,6 @@ export class AuthService {
     newSession.id = this.encryptService.hashSha256(JSON.stringify(data));
     newSession.created_at = now;
     newSession.updated_at = undefined;
-
-    // Add new session to the user object
-    user.session.unshift(newSession);
 
     // Find user index in the database
     const index = await this.getByIndex('email', user.email);

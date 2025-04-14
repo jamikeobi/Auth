@@ -112,7 +112,7 @@ export class AuthController {
         const user = await this.authService.getBy("email", body.email);
         if (!user) {
           return res.status(404).json({
-            message: "Email not found. Please sign up",
+            message: "Credenials not found. Are you a first time user?",
             errors: "No account found with this email. Please register first.",
           });
         }
@@ -127,10 +127,10 @@ export class AuthController {
           .json({ message: "Login successful", data: authResult });
       } else {
         const finding = await this.authService.getBy("email", body.email);
-        if (!finding) {
+        if (finding) {
           return res.status(404).json({
-            message: "Email already saved. Please login",
-            errors: "Email already saved. Please login",
+            message: "Email already saved. Uncheck First Time Login or Clear DB",
+            errors: "Email already saved. Uncheck First Time Login or Clear DB",
           });
         }
 
