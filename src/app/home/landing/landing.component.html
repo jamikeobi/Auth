@@ -15,13 +15,16 @@
   <br>
   <!-- Copy Token Link -->
   <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#copyTokenModal">
-    <i class="fa fa-copy me-2"></i> Copy Token
+    <i class="fa fa-copy me-2"></i> Copy Email
   </a>
   <br>
-  <!-- Change Password Link -->
-  <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+  <!-- Conditional Link: Change Password or Configure Email & Password -->
+  <a *ngIf="loginType === 'Traditional'" href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
     <i class="fa fa-lock me-2"></i> Change Password
   </a>
+  <!-- <a *ngIf="loginType === 'Blockchain'" href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#configureEmailPasswordModal">
+    <i class="fa fa-cog me-2"></i> Configure Email & Password
+  </a> -->
   <br>
   <!-- Log Out Link -->
   <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal">
@@ -31,17 +34,31 @@
 
 <!-- View Session Modal -->
 <div class="modal fade" id="viewSessionModal" tabindex="-1" aria-labelledby="viewSessionModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewSessionModalLabel">View Session</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p>Session ID: CCCCCCCCCCCC</p>
-        <p>Login Type: CCCCCCCCCCCC</p>
-        <p>Login Status: CCCCCCCCCCCC</p>
-        <p>Last Login: CCCCCCCCCCCC</p>
+        <ul class="list-group list-group-flush" *ngIf="sessionData?.user; else noSessionData">
+          <li class="list-group-item"><strong>Session ID:</strong> {{sessionData.user.id}}</li>
+          <li class="list-group-item"><strong>Email:</strong> {{sessionData.user.email}}</li>
+          <li class="list-group-item"><strong>Login Type:</strong> {{loginType}}</li>
+          <li class="list-group-item"><strong>Login Status:</strong> {{loginStatus}}</li>
+          <li class="list-group-item"><strong>Last Login:</strong> {{sessionData.user.created_at | date:'medium'}}</li>
+          <li class="list-group-item"><strong>First Time User:</strong> {{sessionData.user.isFirstTimeUser ? 'Yes' : 'No'}}</li>
+          <li class="list-group-item"><strong>User Agent:</strong> {{sessionData.user.user_agent}}</li>
+          <li class="list-group-item"><strong>Browser:</strong> {{sessionData.user.browser}} {{sessionData.user.browserVersion}}</li>
+          <li class="list-group-item"><strong>Operating System:</strong> {{sessionData.user.os}} {{sessionData.user.osVersion}}</li>
+          <li class="list-group-item"><strong>Device Orientation:</strong> {{sessionData.user.deviceOrientation}}</li>
+          <li class="list-group-item"><strong>IP Address:</strong> {{sessionData.user.ip}}</li>
+          <li class="list-group-item"><strong>Status:</strong> {{sessionData.user.status}}</li>
+          <li class="list-group-item"><strong>Verify Sign:</strong> {{sessionData.user.verify_sign}}</li>
+        </ul>
+        <ng-template #noSessionData>
+          <p class="text-danger">No session data available. Please log in again.</p>
+        </ng-template>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -52,14 +69,54 @@
 
 <!-- Copy Token Modal -->
 <div class="modal fade" id="copyTokenModal" tabindex="-1" aria-labelledby="copyTokenModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="copyTokenModalLabel">Copy Token</h5>
+        <h5 class="modal-title" id="copyTokenModalLabel">Copy Email</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Token copied successfully.
+        <p><strong>Email:</strong> {{token}}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="copyToken()">Copy</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal (Traditional Login) -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #passwordForm="ngForm" (ngSubmit)="onChangePassword()">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" name="currentPassword" [(ngModel)]="changePassword.currentPassword" required>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newPassword" name="newPassword" [(ngModel)]="changePassword.newPassword" required
+                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$">
+            <div *ngIf="passwordForm.controls['newPassword']?.invalid && passwordForm.controls['newPassword']?.touched" class="text-danger">
+              Password must be at least 6 characters, include one uppercase, one lowercase, one number, and one symbol.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" [(ngModel)]="changePassword.confirmPassword" required>
+            <div *ngIf="changePassword.newPassword !== changePassword.confirmPassword && passwordForm.controls['confirmPassword']?.touched" class="text-danger">
+              Passwords do not match.
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || changePassword.newPassword !== changePassword.confirmPassword">Submit</button>
+        </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -68,19 +125,51 @@
   </div>
 </div>
 
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md">
+<!-- Configure Email & Password Modal (Blockchain Login) -->
+<div class="modal fade" id="configureEmailPasswordModal" tabindex="-1" aria-labelledby="configureEmailPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="configureEmailPasswordModalLabel">Configure Email & Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="configureEmailPasswordModalClose"></button>
       </div>
       <div class="modal-body">
-        Password change functionality goes here.
+        <p>
+          To enhance your security, you can set up a masked email and password for traditional login. This masked email keeps your primary email private, reducing exposure to potential spying. Enter one word from your 12-word phrase and its position to generate a password.
+          The derived password will be hashed, and you will need to prove this hash when logging in next time.
+        </p>
+        <p class="text-danger">Note: Updating your password automatically updates your email for security reasons</p>
+        <form #configForm="ngForm" (ngSubmit)="generateCredentials()">
+          <div class="mb-3">
+            <label for="phraseWord" class="form-label">Enter one word from your 12-word phrase (up to 6 characters)</label>
+            <input type="text" class="form-control" id="phraseWord" name="phraseWord" [(ngModel)]="config.phraseWord" (ngModelChange)="updateHash()" required maxlength="100" #phraseWord="ngModel">
+            <div *ngIf="phraseWord.invalid && phraseWord.touched" class="text-danger">
+              Please enter a valid word (up to 6 characters).
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="wordPosition" class="form-label">Select the position of the word (1-12)</label>
+            <select class="form-select" id="wordPosition" name="wordPosition" [(ngModel)]="config.wordPosition" (ngModelChange)="updateHash()" required #wordPosition="ngModel">
+              <option value="" disabled>Select position</option>
+              <option *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="i">{{i}}</option>
+            </select>
+            <div *ngIf="wordPosition.invalid && wordPosition.touched" class="text-danger">
+              Please select a valid position.
+            </div>
+          </div>
+          <div *ngIf="currentHash" class="mb-3">
+            <p><strong>Current Hash:</strong> {{currentHash}}</p>
+            <p class="text-info">You will need to prove this hash when logging in next time.</p>
+          </div>
+        </form>
+        <div *ngIf="!configForm.invalid && generatedEmail" class="mt-3">
+          <p><strong>Generated Email:</strong> {{generatedEmail}}</p>
+          <p><strong>Password:</strong> {{generatedPassword}}</p>
+          <p><strong>Proof Hash:</strong> {{currentHash}}</p>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer" *ngIf="!configForm.invalid">
+        <button class="btn btn-success" (click)="saveCredentials()">Save and Close</button>
       </div>
     </div>
   </div>
@@ -88,7 +177,7 @@
 
 <!-- Log Out Modal -->
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="logoutModalLabel">Log Out</h5>
@@ -98,7 +187,7 @@
         Are you sure you want to log out?
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="closeLogouut" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-secondary" id="closeLogout" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-danger" (click)="logout()">Log Out</button>
       </div>
     </div>

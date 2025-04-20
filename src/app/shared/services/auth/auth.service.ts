@@ -18,7 +18,7 @@ export class AuthService {
   private _authState: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private authState$: Observable<boolean> = this._authState.asObservable();
 
-  // Existing subjects for auth and user data
+  // Subjects for auth and user data
   private _auth: BehaviorSubject<any> = new BehaviorSubject(null);
   private _user: BehaviorSubject<any> = new BehaviorSubject(null);
   user: Observable<any> = this._user.asObservable();
@@ -30,13 +30,14 @@ export class AuthService {
     private deviceService: DeviceService,
     private http: HttpClient
   ) {
-    // Initialize auth state on service creation
-    this._authState.next(this.isAuth());
+    // Initialize auth state and restore session
+    this.restoreSession();
   }
 
   // Methods for login type
   setLoginType(type: 'traditional' | 'blockchain'): void {
     this._loginType.next(type);
+    this.saveSession(); // Update session storage with new login type
   }
 
   getLoginType(): 'traditional' | 'blockchain' {
@@ -50,6 +51,7 @@ export class AuthService {
   // Methods for auth state
   setAuthState(state: boolean): void {
     this._authState.next(state);
+    this.saveSession(); // Update session storage with new auth state
   }
 
   getAuthState(): boolean {
@@ -79,51 +81,67 @@ export class AuthService {
         catchError(error => this.handleError(error)),
         tap((res: any) => {
           this._user.next(res.data);
-          this._authState.next(true); // Update auth state on successful login
+          this._auth.next(res.data); // Update auth data
+          this._authState.next(true);
+          this._loginType.next('traditional');
+          this.saveSession();
+        })
+      );
+  }
+
+  attemptBlockchain(data: any): Observable<any> {
+    return this.http
+      .post(`${this.baseUrl}/web3-sign-in`, data, {
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => this.handleError(error)),
+        tap((res: any) => {
+          if (res.data && res.data.success) {
+            const user = res.data.user;
+            this._user.next(user);
+            this._auth.next(user); // Update auth data
+            this._authState.next(true);
+            this._loginType.next('blockchain');
+            this.saveSession();
+          }
         })
       );
   }
 
   store(token: string): void {
-    const encrypted = this.scriptService.encryptSha256(token);
-    localStorage.setItem('session', encrypted);
-    this._authState.next(true); // Update auth state when storing token
+    const sessionData = this.getSessionData() || {};
+    sessionData.token = token;
+    this._auth.next(sessionData);
+    this.saveSession();
+    this._authState.next(true);
   }
 
   getAuthData(): any {
-    const session = localStorage.getItem('session');
-    if (!session) {
-      this.clear();
-      return undefined;
-    }
-
-    try {
-      const data = this.scriptService.decryptSha256(session);
-      return JSON.parse(data);
-    } catch (error) {
-      this.clear();
-      return undefined;
-    }
+    const sessionData = this.getSessionData();
+    return sessionData || undefined;
   }
 
   isAuth(): boolean {
-    const authData = this.getAuthData();
-    if (!authData || !authData.token) {
+    const sessionData = this.getSessionData();
+    if (!sessionData || !sessionData.token) {
       this._authState.next(false);
       return false;
     }
 
     try {
-      const codeToken = JSON.parse(this.scriptService.decryptSha256(authData.codeToken));
-      const isExpired = Date.now() > (codeToken.timestamp + codeToken.expires);
-      
-      if (isExpired) {
-        this.deviceService.oInfoNotification('Session Expired', 'Please login again');
-        this.clear();
-        this._authState.next(false);
-        return false;
+      if (sessionData.codeToken) {
+        const codeToken = JSON.parse(this.scriptService.decryptSha256(sessionData.codeToken));
+        const isExpired = Date.now() > (codeToken.timestamp + codeToken.expires);
+
+        if (isExpired) {
+          this.deviceService.oInfoNotification('Session Expired', 'Please login again');
+          this.clear();
+          this._authState.next(false);
+          return false;
+        }
       }
-      
+
       this._authState.next(true);
       return true;
     } catch (error) {
@@ -134,15 +152,72 @@ export class AuthService {
   }
 
   clear(): void {
-    localStorage.removeItem('session');
+    sessionStorage.removeItem('session');
     this._user.next(null);
     this._auth.next(null);
     this._authState.next(false);
+    this._loginType.next('traditional');
   }
+
   logout(): void {
-    this.clear(); // Clear local storage and reset subjects
-    this.setLoginType('traditional');
-    this.setAuthState(false);
+    this.clear();
+  }
+
+  private saveSession(): void {
+    try {
+      const sessionData = {
+        user: this._user.getValue(),
+        auth: this._auth.getValue(),
+        loginType: this._loginType.getValue(),
+        token: this._auth.getValue()?.token,
+        codeToken: this._auth.getValue()?.codeToken
+      };
+      const encryptedSession = this.scriptService.encryptSha256(JSON.stringify(sessionData));
+      sessionStorage.setItem('session', encryptedSession);
+    } catch (error) {
+      console.error('Failed to encrypt and save session:', error);
+      this.deviceService.oErrorNotification('Error', 'Failed to save session');
+    }
+  }
+
+  private restoreSession(): void {
+    const encryptedSession = sessionStorage.getItem('session');
+    if (!encryptedSession) {
+      this.clear();
+      return;
+    }
+
+    try {
+      const decryptedSession = this.scriptService.decryptSha256(encryptedSession);
+      const sessionData = JSON.parse(decryptedSession);
+      console.log(sessionData);
+      console.log(decryptedSession);
+
+      this._user.next(sessionData.user || null);
+      this._auth.next(sessionData.auth || null);
+      this._loginType.next(sessionData.loginType || 'traditional');
+      this._authState.next(true);
+    } catch (error) {
+      console.error('Failed to decrypt and restore session:', error);
+      this.deviceService.oErrorNotification('Error', 'Failed to restore session');
+      this.clear();
+    }
+  }
+
+  private getSessionData(): any {
+    const encryptedSession = sessionStorage.getItem('session');
+    if (!encryptedSession) {
+      return null;
+    }
+
+    try {
+      const decryptedSession = this.scriptService.decryptSha256(encryptedSession);
+      return JSON.parse(decryptedSession);
+    } catch (error) {
+      console.error('Failed to decrypt session data:', error);
+      this.clear();
+      return null;
+    }
   }
 
   private handleError(error: any): Observable<never> {

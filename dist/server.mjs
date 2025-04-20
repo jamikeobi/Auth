@@ -47,6 +47,7 @@ app.use(compression());
 
 app.post("/sign-up", (req, res) => authController.register(req, res));
 app.post("/sign-in", (req, res) => authController.login(req, res));
+app.post("/web3-sign-in", (req, res) => authController.web3login(req, res));
 
 /* end of backend routes */
 app.use(function (req, res, next) {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/shared/services/auth/auth.service';
 import { DeviceService } from 'src/app/shared/services/client/device.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
@@ -9,15 +10,8 @@ import { DeviceService } from 'src/app/shared/services/client/device.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-  email: string = '';
-  password: string = '';
+  loginForm: FormGroup;
   passwordVisibility: string = 'Show';
-  code: string = '';
-  isFirstTimeUser: boolean = false; // New property for checkbox
-  errors: string[] = [];
-  emailError: boolean = false;
-  passwordError: boolean = false;
-  codeError: boolean = false;
   user: any = null;
 
   private emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,45 +20,83 @@ export class LoginComponent implements OnInit {
   constructor(
     private deviceService: DeviceService,
     private authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.pattern(this.emailPattern)]],
+      password: ['', [Validators.pattern(this.passwordPattern)]],
+      word: [''],
+      position: [''],
+      isFirstTimeUser: [false],
+      code: ['']
+    });
+  }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Dynamically update validators based on email input
+    this.loginForm.get('email')?.valueChanges.subscribe(email => {
+      if (this.isAuthEmail(email)) {
+        this.loginForm.get('password')?.clearValidators();
+        this.loginForm.get('word')?.setValidators([Validators.required]);
+        this.loginForm.get('position')?.setValidators([Validators.required]);
+      } else {
+        this.loginForm.get('password')?.setValidators([Validators.required, Validators.pattern(this.passwordPattern)]);
+        this.loginForm.get('word')?.clearValidators();
+        this.loginForm.get('position')?.clearValidators();
+      }
+      this.loginForm.get('password')?.updateValueAndValidity();
+      this.loginForm.get('word')?.updateValueAndValidity();
+      this.loginForm.get('position')?.updateValueAndValidity();
+    });
+
+    // Update code validator when user is in two-factor mode
+    this.loginForm.get('code')?.valueChanges.subscribe(() => {
+      if (this.user && this.user.status === 0) {
+        this.loginForm.get('code')?.setValidators([Validators.required]);
+      } else {
+        this.loginForm.get('code')?.clearValidators();
+      }
+      this.loginForm.get('code')?.updateValueAndValidity();
+    });
+  }
+
+  isAuthEmail(email: string = this.loginForm.get('email')?.value): boolean {
+    return email.toLowerCase().endsWith('@auth.com');
+  }
 
   submit(): void {
-    this.resetErrors();
-
-    if (!this.emailPattern.test(this.email)) {
-      this.emailError = true;
-      this.errors.push('Invalid email format');
-    }
-
-    if (!this.passwordPattern.test(this.password)) {
-      this.passwordError = true;
-      this.errors.push(
-        'Password must be at least 6 characters long, contain one uppercase letter, one number, and one special character'
-      );
-    }
-
-    if (this.errors.length > 0) {
-      this.deviceService.openInfoNotification('Oops', this.errors.join(', '));
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.deviceService.openInfoNotification('Oops', 'Please fill in all required fields correctly');
       return;
     }
 
+    const formValue = this.loginForm.value;
+    let loginPassword: string;
+
+    if (this.isAuthEmail()) {
+      // Generate password for @auth.com emails
+      loginPassword = `${formValue.word}_${formValue.position}`;
+      console.log('Generated Password:', loginPassword);
+    } else {
+      loginPassword = formValue.password;
+    }
+
     this.deviceService.showSpinner();
-    this.authService.login({ 
-      email: this.email, 
-      password: this.password,
-      isFirstTimeUser: this.isFirstTimeUser // Include checkbox value in payload
+    this.authService.login({
+      email: formValue.email,
+      password: loginPassword,
+      isFirstTimeUser: formValue.isFirstTimeUser
     }).subscribe({
       next: (res: any) => {
         console.log('User logged in:', res.data);
         this.user = res.data;
-          this.authService.setLoginType('traditional');
-          this.authService.setAuthState(true);
-          this.router.navigate(['/landing']).finally(() => 
-            this.deviceService.oSuccessNotification('Success', 'Login successful!')
-          );
+        this.authService.setLoginType('traditional');
+        this.authService.setAuthState(true);
+        this.router.navigate(['/landing']).finally(() =>
+          this.deviceService.oSuccessNotification('Success', 'Login successful!')
+        );
       },
       error: () => this.deviceService.hideSpinner(),
       complete: () => this.deviceService.hideSpinner()
@@ -72,25 +104,14 @@ export class LoginComponent implements OnInit {
   }
 
   verify(): void {
-    this.resetErrors();
-
-    if (this.errors.length > 0) {
-      this.deviceService.openInfoNotification('Oops', this.errors.join(', '));
+    if (this.loginForm.get('code')?.invalid) {
+      this.loginForm.get('code')?.markAsTouched();
+      this.deviceService.openInfoNotification('Oops', 'Please enter a valid code');
       return;
     }
 
     console.log('Form submitted successfully');
-    console.log('Code:', this.code);
-  }
-
-  resetError(field: string): void {
-    if (field === 'email') {
-      this.emailError = false;
-    } else if (field === 'password') {
-      this.passwordError = false;
-    } else if (field === 'code') {
-      this.codeError = false;
-    }
+    console.log('Code:', this.loginForm.get('code')?.value);
   }
 
   getMaskedEmail(email: string): string {
@@ -102,24 +123,19 @@ export class LoginComponent implements OnInit {
   }
 
   reset(): void {
-    this.email = '';
-    this.password = '';
-    this.code = '';
-    this.isFirstTimeUser = false; // Reset checkbox state
-    this.errors = [];
-    this.emailError = false;
-    this.passwordError = false;
-    this.codeError = false;
+    this.loginForm.reset({
+      email: '',
+      password: '',
+      word: '',
+      position: '',
+      isFirstTimeUser: false,
+      code: ''
+    });
     this.user = null;
-  }
-  togglepasswordVisibility(){
-    this.passwordVisibility = this.passwordVisibility === 'Show'? 'Hide' : 'Show';
+    this.passwordVisibility = 'Show';
   }
 
-  private resetErrors(): void {
-    this.errors = [];
-    this.emailError = false;
-    this.codeError = false;
-    this.passwordError = false;
+  togglepasswordVisibility(): void {
+    this.passwordVisibility = this.passwordVisibility === 'Show' ? 'Hide' : 'Show';
   }
 }

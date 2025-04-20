@@ -1,9 +1,13 @@
 import { AuthService } from "../service/auth.service.mjs";
 import { EnzoicService } from "../service/enzoic.service.mjs";
+import dotenv from "dotenv";
+dotenv.config();
+
 export class AuthController {
   authService = new AuthService();
   enzoicService = new EnzoicService();
   constructor() {}
+
   /**
    * Handles user registration requests.
    *
@@ -58,6 +62,7 @@ export class AuthController {
     //     });
     // }
   }
+
   /**
    * Handles user login requests.
    *
@@ -112,7 +117,7 @@ export class AuthController {
         const user = await this.authService.getBy("email", body.email);
         if (!user) {
           return res.status(404).json({
-            message: "Credenials not found. Are you a first time user?",
+            message: "Credentials not found. Are you a first time user?",
             errors: "No account found with this email. Please register first.",
           });
         }
@@ -138,7 +143,6 @@ export class AuthController {
         return res
           .status(200)
           .json({ message: "Account created Login successful", data: user });
-
       }
     } catch (error) {
       return res.status(500).json({
@@ -149,36 +153,146 @@ export class AuthController {
   }
 
   /**
-   * Validates the provided request body for email and password fields.
+   * Handles Web3 (blockchain) login requests.
    *
-   * This function checks if the email and password are present in the body,
-   * and validates them against predefined patterns. It returns an array of
-   * error messages if any validation checks fail.
+   * This asynchronous function processes the Web3 login request by validating the input,
+   * decrypting the password to retrieve the wallet address, validating the email by recomputing
+   * it using the decrypted address and PRIVATE_SESSION_KEY, and creating a new auth record.
+   *
+   * @param {Object} req - The request object containing Web3 credentials in the body.
+   * @param {Object} res - The response object used to send back the desired HTTP response.
+   *
+   * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+   */
+  async web3login(req, res) {
+    try {
+      // Get the request body
+      const body = req.body;
+
+      // Validate the request body for blockchain login
+      const validation = await this._validate(body, true);
+      if (validation.length > 0) {
+        return res.status(400).json({
+          message: validation.join("\n"),
+          errors: validation,
+        });
+      }
+
+      // Decrypt the password to get the wallet address
+      let walletAddress;
+      try {
+        walletAddress = this.authService.encryptService.decryptSha256(body.password);
+      } catch (error) {
+        return res.status(400).json({
+          message: "Failed to decrypt password",
+          errors: "Invalid or corrupted password encryption",
+        });
+      }
+
+      // Validate the email by recomputing it
+      const expectedEmail = this.authService.encryptService.hashFnv32a(
+        walletAddress,
+        true,
+        this.authService.encryptService.hashSha256(process.env.PRIVATE_SESSION_KEY)
+      ) + "@auth.com";
+
+      if (body.email !== expectedEmail) {
+        return res.status(401).json({
+          message: "Invalid email",
+          errors: "Email does not match the expected value derived from the wallet address and key",
+        });
+      }
+
+      // Prepare data for attemptBlockchain, using decrypted wallet address as password
+      const authData = {
+        email: body.email,
+        password: walletAddress, // Use decrypted address
+        user_agent: body.user_agent,
+        browserVersion: body.browserVersion,
+        os: body.os,
+        osVersion: body.osVersion,
+        browser: body.browser,
+        deviceOrientation: body.deviceOrientation,
+        ip: body.ip,
+        isFirstTimeUser: body.isFirstTimeUser !== undefined ? body.isFirstTimeUser : true
+      };
+
+      // Attempt blockchain authentication
+      const authResult = await this.authService.attemptBlockchain(authData);
+      if (!authResult.success) {
+        return res.status(401).json({
+          message: "Blockchain login failed",
+          errors: authResult.error || "Invalid credentials",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Blockchain login successful",
+        data: authResult
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "An unexpected error occurred. Please try again later.",
+        errors: error.message,
+      });
+    }
+  }
+
+  /**
+   * Validates the provided request body for required fields.
+   *
+   * This function checks if the required fields are present and valid in the body.
+   * For blockchain login, it skips traditional password pattern validation and
+   * enforces email format specific to @auth.com.
    *
    * @param {Object} body - The request body containing user input.
-   * @param {string} body.email - The email address to be validated.
-   * @param {string} body.password - The password to be validated.
+   * @param {boolean} isBlockchain - Flag to indicate if this is a blockchain login.
    * @returns {Promise<string[]>} - A promise that resolves to an array of error messages.
    */
-  async _validate(body) {
+  async _validate(body, isBlockchain = false) {
     let errors = [];
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation pattern
-    const passwordPattern =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
+    // Required fields
     if (!body.email) {
-      errors.unshift("Email is not found");
+      errors.push("Email is not found");
     }
     if (!body.password) {
-      errors.unshift("Password is not found");
+      errors.push("Password is not found");
     }
+
+    // Email format validation
+    const emailPattern = isBlockchain ? /^[^\s@]+@auth\.com$/ : /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (body.email && !emailPattern.test(body.email)) {
-      errors.unshift("Invalid email format");
+      errors.push(isBlockchain ? "Email must end with @auth.com" : "Invalid email format");
     }
-    if (body.password && !passwordPattern.test(body.password)) {
-      errors.unshift(
-        "Password must be at least 6 characters long, contain one uppercase letter, one number, and one special character"
-      );
+
+    // Password validation (skip pattern for blockchain login)
+    if (!isBlockchain && body.password) {
+      const passwordPattern =
+        /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+      if (!passwordPattern.test(body.password)) {
+        errors.push(
+          "Password must be at least 6 characters long, contain one uppercase letter, one number, and one special character"
+        );
+      }
+    }
+
+    // Device info validation (required for blockchain login)
+    if (isBlockchain) {
+      const requiredDeviceFields = [
+        'user_agent',
+        'browserVersion',
+        'os',
+        'osVersion',
+        'browser',
+        'deviceOrientation',
+        'ip'
+      ];
+      for (const field of requiredDeviceFields) {
+        if (!body[field]) {
+          errors.push(`Missing required field: ${field}`);
+        }
+      }
     }
 
     return errors;

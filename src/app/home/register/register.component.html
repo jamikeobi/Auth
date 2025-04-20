@@ -1,7 +1,72 @@
-
 <form action="#">
-
-  <h1 *ngIf="!user">Web3 Login</h1>
-  <button (click)="submit()" *ngIf="!user">Sign In</button>
-
+  <div *ngIf="!showMetaMaskCard">
+    <h1 *ngIf="!user">Web3 Login</h1>
+    <button (click)="submit()" *ngIf="!user">Sign In</button>
+  </div>
+  <!-- MetaMask Not Found Card -->
+  <div *ngIf="showMetaMaskCard" class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <h5 class="card-title mb-3">MetaMask Not Found</h5>
+      <p class="card-text mb-2">{{ browserMessage }}</p>
+      <p
+        *ngIf="downloadLinks.length > 0 || alternativeLink"
+        class="card-text mb-2"
+      >
+        Please install a Web3 wallet to proceed:
+      </p>
+      <ul class="list-unstyled">
+        <!-- MetaMask Download Links -->
+        <ng-container *ngIf="downloadLinks.length > 0">
+          <li *ngFor="let link of downloadLinks" class="mb-2">
+            <a
+              [href]="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-primary"
+            >
+              {{ link.text }}
+            </a>
+          </li>
+        </ng-container>
+        <!-- Alternative ERC-20 Wallet Link (only shown if no MetaMask links) -->
+        <li *ngIf="downloadLinks.length === 0 && alternativeLink" class="mb-2">
+          <a
+            [href]="alternativeLink.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary"
+          >
+            {{ alternativeLink.text }}
+          </a>
+        </li>
+      </ul>
+      <!-- Unsupported Browser Message -->
+      <p
+        *ngIf="downloadLinks.length === 0 && !alternativeLink"
+        class="card-text mb-2 text-danger"
+      >
+        {{ unsupportedMessage }}
+      </p>
+      <!-- Suggested Browsers (only shown if browser isn't Chrome, Edge, or Firefox) -->
+      <p *ngIf="showSuggestedBrowsers" class="card-text mb-2">
+        Suggested browsers for Web3 login:
+      </p>
+      <ul *ngIf="showSuggestedBrowsers" class="list-unstyled">
+        <li *ngFor="let browser of suggestedBrowsers" class="mb-2">
+          <a
+            [href]="browser.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary"
+          >
+            {{ browser.name }}
+          </a>
+        </li>
+      </ul>
+      <!-- Retry Button -->
+      <button class="btn btn-primary mt-3" (click)="retry()">
+        Return and Retry
+      </button>
+    </div>
+  </div>
 </form>

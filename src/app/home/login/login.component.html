@@ -1,55 +1,101 @@
-<form action="#" autocomplete="off">
+<form [formGroup]="loginForm" (ngSubmit)="submit()" autocomplete="off">
   <h1 *ngIf="!user">Sign in</h1>
   <h1 *ngIf="user && user.status==1">Two Factor</h1>
   <span *ngIf="!user">using email and password</span>
   <span *ngIf="user && user.status==1">Check {{getMaskedEmail(user.email)}} for verification code</span>
-  
-  <input 
-    type="email" 
-    placeholder="Email" 
-    [ngClass]="{ 'error-border': emailError }"
-    (focus)="resetError('email')"
-    [(ngModel)]="email" 
-    name="email"
-    *ngIf="!user"
-    autocomplete="off"
-  />
-  
-  <input 
-    name="password" 
-    placeholder="Password" 
-    [ngClass]="{ 'error-border': passwordError }"
-    (focus)="resetError('password')" 
-    *ngIf="!user"
-    [(ngModel)]="password" 
-    [type]="passwordVisibility!='Show' ?'text':'password' "
-    autocomplete="off"
-  />
-  <a href="javascript:void()" (click)="togglepasswordVisibility()" class="maxwidth">{{passwordVisibility}} Password</a>
 
-  <!-- Add First Time User checkbox -->
+  <div class="mb-3" *ngIf="!user">
+    <p class="form-label text-left">Email</p>
+    <input
+      type="email"
+      placeholder="Email"
+      class="form-control"
+      [ngClass]="{ 'error-border': loginForm.get('email')?.invalid && loginForm.get('email')?.touched }"
+      formControlName="email"
+      autocomplete="off"
+    />
+    <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="text-danger">
+      Please enter a valid email.
+    </div>
+  </div>
+
+  <!-- Password Input for non-@auth.com emails -->
+  <div *ngIf="!user && !isAuthEmail()">
+    <div class="mb-3">
+      <p class="form-label text-left">Password</p>
+
+      <input
+        placeholder="Password"
+        class="form-control"
+        [ngClass]="{ 'error-border': loginForm.get('password')?.invalid && loginForm.get('password')?.touched }"
+        formControlName="password"
+        [type]="passwordVisibility!='Show' ? 'text' : 'password'"
+        autocomplete="off"
+      />
+      <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger">
+        Password must be at least 6 characters, include one uppercase, one number, and one special character.
+      </div>
+    </div>
+    <a href="javascript:void()" (click)="togglepasswordVisibility()" class="maxwidth">{{passwordVisibility}} Password</a>
+  </div>
+
+  <!-- Word and Position Inputs for @auth.com emails -->
+  <div *ngIf="!user && isAuthEmail()">
+    <div class="mb-3">
+      <p class="form-label text-left">Password</p>
+      <input
+        type="text"
+        placeholder="Word (from 12-word phrase)"
+        class="form-control"
+        [ngClass]="{ 'error-border': loginForm.get('word')?.invalid && loginForm.get('word')?.touched }"
+        formControlName="word"
+        maxlength="100"
+        autocomplete="off"
+      />
+      <div *ngIf="loginForm.get('word')?.invalid && loginForm.get('word')?.touched" class="text-danger">
+        Please enter a valid word.
+      </div>
+    </div>
+    <div class="mb-3">
+      <select
+        class="form-select"
+        formControlName="position"
+        [ngClass]="{ 'error-border': loginForm.get('position')?.invalid && loginForm.get('position')?.touched }"
+      >
+        <option value="" disabled>Select position (1-12)</option>
+        <option *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="i">{{i}}</option>
+      </select>
+      <div *ngIf="loginForm.get('position')?.invalid && loginForm.get('position')?.touched" class="text-danger">
+        Please select a valid position.
+      </div>
+    </div>
+  </div>
+
+  <!-- First Time User Checkbox -->
   <div class="checkbox-container" *ngIf="!user">
     <label title="Click to create an account">
-      <input 
-        type="checkbox" 
-        [(ngModel)]="isFirstTimeUser" 
-        name="isFirstTimeUser"
+      <input
+        type="checkbox"
+        formControlName="isFirstTimeUser"
       />
       First Time User?
     </label>
   </div>
 
-  <input 
-    type="number" 
-    placeholder="Code" 
-    [ngClass]="{ 'error-border': codeError }"
-    (focus)="resetError('code')" 
-    *ngIf="user && user.status==0"
-    [(ngModel)]="code" 
-    name="code"
-  />
-  
-  <button (click)="submit()" *ngIf="!user">Sign In</button>
-  <button (click)="verify()" *ngIf="user && user.status==0">Verify</button>
+  <div class="mb-3" *ngIf="user && user.status==0">
+    <input
+      type="number"
+      placeholder="Code"
+      class="form-control"
+      [ngClass]="{ 'error-border': loginForm.get('code')?.invalid && loginForm.get('code')?.touched }"
+      formControlName="code"
+    />
+    <div *ngIf="loginForm.get('code')?.invalid && loginForm.get('code')?.touched" class="text-danger">
+      Please enter a valid code.
+    </div>
+  </div>
+
+  <button type="submit" *ngIf="!user" [disabled]="loginForm.invalid" class="btn btn-primary">Sign In</button>
+  <button type="button" (click)="verify()" *ngIf="user && user.status==0" [disabled]="loginForm.get('code')?.invalid" class="btn btn-primary">Verify</button>
   <a href="javascript:void(0)" (click)="reset()" *ngIf="user">Change Email</a>
 </form>

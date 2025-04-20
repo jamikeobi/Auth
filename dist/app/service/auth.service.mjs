@@ -1,5 +1,4 @@
 import { JsonDB, Config } from "node-json-db";
-
 import fileDirName from "../../file-dir-name.mjs";
 import { EncryptionService } from "./encryption.service.mjs";
 import { MailTemplate } from "../mail/templates.mjs";
@@ -11,6 +10,7 @@ const { __dirname } = fileDirName(import.meta);
 // Public path to the active directory (auth.json)
 const DBPATH = "/../../db/auth.json";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+
 /**
  * A class which has the direct access to the Auth table.
  * Exposing the following methods:
@@ -27,6 +27,7 @@ export class AuthService {
   mailTemplate = new MailTemplate();
   mailService = new MailService();
   constructor() {}
+
   /**
    * Fetch all auths from db
    * @returns Array
@@ -34,6 +35,7 @@ export class AuthService {
   auths = async () => {
     return await this.db.getData("/records");
   };
+
   /**
    * Save new event to table
    * @param data is the new record to save.
@@ -59,14 +61,14 @@ export class AuthService {
     await this.db.push("/records[]", data);
     return data;
   }
+
   async attempt(user, data) {
     const now = new Date();
 
     // Validate password
     const decryptedPassword = this.encryptService.decryptSha256(user.password);
-    console.log(decryptedPassword, data.password);
     if (data.password !== decryptedPassword || user.email !== data.email) {
-        return {}; // Return an empty object if authentication fails
+      return {}; // Return an empty object if authentication fails
     }
 
     // Create a new session object excluding sensitive fields
@@ -76,16 +78,92 @@ export class AuthService {
     newSession.updated_at = undefined;
 
     // Find user index in the database
-    const index = await this.getByIndex('email', user.email);
+    const index = await this.getByIndex("email", user.email);
     if (index === -1) {
-        return {}; // Return an empty object if user is not found
+      return {}; // Return an empty object if user is not found
     }
 
     // Update the user in the database
     const updatedUser = await this.update({ ...user, id: undefined }, index);
     return updatedUser;
-}
+  }
 
+  async attemptBlockchain(data) {
+    // Validate required input data
+    if (!data || !data.email || !data.password) {
+      return { error: 'Missing required fields: email and password' };
+    }
+
+    // Validate email format (must end with @auth.com)
+    const emailRegex = /^[^\s@]+@auth\.com$/;
+    if (!emailRegex.test(data.email)) {
+      return { error: 'Invalid email format' };
+    }
+
+    // Validate password format (must be a valid Ethereum address)
+    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+    if (!addressRegex.test(data.password)) {
+      return { error: 'Invalid password format' };
+    }
+
+    // Validate required device info fields
+    const requiredDeviceFields = [
+      'user_agent',
+      'browserVersion',
+      'os',
+      'osVersion',
+      'browser',
+      'deviceOrientation',
+      'ip'
+    ];
+    for (const field of requiredDeviceFields) {
+      if (!data[field]) {
+        return { error: `Missing required field: ${field}` };
+      }
+    }
+
+    const now = new Date();
+
+    // Create session data
+    const sessionData = {
+      email: data.email,
+      address: data.password,
+      loginType: 'blockchain',
+      timestamp: now.toISOString()
+    };
+
+    // Encrypt session data with SHA-256
+    const encryptedSession = this.encryptService.hashSha256(JSON.stringify(sessionData));
+
+    // Create new auth record using provided device info
+    const newAuthRecord = {
+      email: data.email,
+      password: this.encryptService.encryptSha256(data.password),
+      isFirstTimeUser: data.isFirstTimeUser !== undefined ? data.isFirstTimeUser : true,
+      user_agent: data.user_agent,
+      browserVersion: data.browserVersion,
+      os: data.os,
+      osVersion: data.osVersion,
+      browser: data.browser,
+      deviceOrientation: data.deviceOrientation,
+      id: this.encryptService.hashFnv32a(data.email, false, now.getTime()),
+      created_at: now.toISOString(),
+      status: 0,
+      verify_sign: this.encryptService.hashFnv32a(encryptedSession, false, now.getTime()),
+      ip: data.ip
+    };
+
+    // Log the new auth record to console
+    console.log('New Auth Record:', newAuthRecord);
+
+    // Save the new auth record to the database
+    await this.db.push("/records[]", newAuthRecord);
+
+    return {
+      success: true,
+      user: newAuthRecord
+    };
+  }
 
   /**
    * Get User Record
@@ -96,7 +174,7 @@ export class AuthService {
   async getBy(field, value) {
     const auths = await this.auths();
     return auths.find((u) => u[field] === value) || null;
-}
+  }
 
   async getByMultiple(field1, value1, field2, value2, cb) {
     const auths = await this.auths();
@@ -105,11 +183,13 @@ export class AuthService {
     );
     return cb(found);
   }
+
   async getByIndex(field, value) {
     const auths = await this.auths();
     const found = auths.findIndex((u) => u[field] == value);
     return found;
   }
+
   /**
    * Find User Record
    * @param field is the field to search by.
@@ -120,6 +200,7 @@ export class AuthService {
     const found = await this.auths().find((u) => u[field] == value);
     return found;
   }
+
   /**
    * Delete User Record
    * @param code is the code of record to delete.
@@ -129,11 +210,13 @@ export class AuthService {
     await this.db.delete(`/records[${indexOf}]`);
     return cb();
   }
+
   /**
    * Update User Record
    * @param data is the updated version of record.
    * @returns Object
-   */async update(data, indexOf) {
+   */
+  async update(data, indexOf) {
     const now = new Date();
     data.updated_at = now;
 
@@ -142,7 +225,7 @@ export class AuthService {
 
     // Return the updated data
     return data;
-}
+  }
 
   /**
    * Get User Record
@@ -151,12 +234,6 @@ export class AuthService {
    */
   async all(cb) {
     let auths = await this.auths();
-    // auths = auths.map(
-    //   ing=>{
-    //     const image = ing.image.substring(7);
-    //     return {...ing, image}
-    //   }
-    // )
     return cb(auths.reverse());
   }
 }
