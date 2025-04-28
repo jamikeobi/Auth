@@ -9,61 +9,6 @@ export class AuthController {
   constructor() {}
 
   /**
-   * Handles user registration requests.
-   *
-   * This asynchronous function processes the registration request by validating the input,
-   * checking if the email already exists, and saving the new user account if it does not.
-   *
-   * @param {Object} req - The request object containing user registration details in the body.
-   * @param {Object} res - The response object used to send back the desired HTTP response.
-   *
-   * @returns {Promise<void>} - A promise that resolves when the response has been sent.
-   */
-  async register(req, res) {
-    // try {
-    //     // get the request body
-    //     const body = req.body;
-    //     const validation = await this._validate(body);
-    //     // Check for validation errors
-    //     if (validation.length > 0) {
-    //         let message = ``;
-    //         // Loop and convert all errors to string using the inbuilt array forEach
-    //         validation.forEach((element) => (message += `${element}\n`));
-    //         // return an error status message in json format
-    //         return res.status(500).json({
-    //             message: message,
-    //             errors: validation,
-    //         });
-    //     }
-    //     // Check if the email already exists
-    //     await this.authService.getBy('email', body.email, async (data) => {
-    //         if (!data) {
-    //             // Save the new user account
-    //             await this.authService.save(body, (auth) => {
-    //                 // return a success response in json format
-    //                 return res.status(200).json({
-    //                     message: "Account created",
-    //                     data: auth,
-    //                 });
-    //             });
-    //         } else {
-    //             // Email already exists
-    //             return res.status(500).json({
-    //                 message: "Email exists. Please sign in",
-    //                 errors: "Email exists. Please sign in",
-    //             });
-    //         }
-    //     });
-    // } catch (error) {
-    //     // return an error status message in json format
-    //     return res.status(500).json({
-    //         message: "Ensure to send an encoded POST request or try again later",
-    //         errors: error.message,
-    //     });
-    // }
-  }
-
-  /**
    * Handles user login requests.
    *
    * This asynchronous function processes the login request by validating the input,
@@ -134,7 +79,8 @@ export class AuthController {
         const finding = await this.authService.getBy("email", body.email);
         if (finding) {
           return res.status(404).json({
-            message: "Email already saved. Uncheck First Time Login or Clear DB",
+            message:
+              "Email already saved. Uncheck First Time Login or Clear DB",
             errors: "Email already saved. Uncheck First Time Login or Clear DB",
           });
         }
@@ -181,7 +127,9 @@ export class AuthController {
       // Decrypt the password to get the wallet address
       let walletAddress;
       try {
-        walletAddress = this.authService.encryptService.decryptSha256(body.password);
+        walletAddress = this.authService.encryptService.decryptSha256(
+          body.password
+        );
       } catch (error) {
         return res.status(400).json({
           message: "Failed to decrypt password",
@@ -190,16 +138,20 @@ export class AuthController {
       }
 
       // Validate the email by recomputing it
-      const expectedEmail = this.authService.encryptService.hashFnv32a(
-        walletAddress,
-        true,
-        this.authService.encryptService.hashSha256(process.env.PRIVATE_SESSION_KEY)
-      ) + "@auth.com";
+      const expectedEmail =
+        this.authService.encryptService.hashFnv32a(
+          walletAddress,
+          true,
+          this.authService.encryptService.hashSha256(
+            process.env.PRIVATE_SESSION_KEY
+          )
+        ) + "@auth.com";
 
       if (body.email !== expectedEmail) {
         return res.status(401).json({
           message: "Invalid email",
-          errors: "Email does not match the expected value derived from the wallet address and key",
+          errors:
+            "Email does not match the expected value derived from the wallet address and key",
         });
       }
 
@@ -214,7 +166,8 @@ export class AuthController {
         browser: body.browser,
         deviceOrientation: body.deviceOrientation,
         ip: body.ip,
-        isFirstTimeUser: body.isFirstTimeUser !== undefined ? body.isFirstTimeUser : true
+        isFirstTimeUser:
+          body.isFirstTimeUser !== undefined ? body.isFirstTimeUser : true,
       };
 
       // Attempt blockchain authentication
@@ -228,7 +181,7 @@ export class AuthController {
 
       return res.status(200).json({
         message: "Blockchain login successful",
-        data: authResult
+        data: authResult,
       });
     } catch (error) {
       return res.status(500).json({
@@ -236,6 +189,33 @@ export class AuthController {
         errors: error.message,
       });
     }
+  }
+  async whois(req, res) {
+    // Extract token from Authorization header (e.g., "Bearer <token>")
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Get token after "Bearer"
+    console.log(token);
+    if(token){
+        // Attempt blockchain authentication
+        const authResult = await this.authService.getBy('current', token);
+        console.log(authResult)
+        if (!authResult) {
+          return res.status(401).json({
+            message: "Unknown Session",
+            errors: "Unknown Session",
+          });
+        }else{
+             // Return the token as JSON
+            return res.status(200).json({
+              data: {...authResult.session}, // Return null if token is undefined or missing
+            });
+        }
+    }
+    // Return the token as JSON
+    return res.status(401).json({
+      message: "Token Required",
+      errors: "Token Required",
+    });
   }
 
   /**
@@ -261,9 +241,13 @@ export class AuthController {
     }
 
     // Email format validation
-    const emailPattern = isBlockchain ? /^[^\s@]+@auth\.com$/ : /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailPattern = isBlockchain
+      ? /^[^\s@]+@auth\.com$/
+      : /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (body.email && !emailPattern.test(body.email)) {
-      errors.push(isBlockchain ? "Email must end with @auth.com" : "Invalid email format");
+      errors.push(
+        isBlockchain ? "Email must end with @auth.com" : "Invalid email format"
+      );
     }
 
     // Password validation (skip pattern for blockchain login)
@@ -280,13 +264,13 @@ export class AuthController {
     // Device info validation (required for blockchain login)
     if (isBlockchain) {
       const requiredDeviceFields = [
-        'user_agent',
-        'browserVersion',
-        'os',
-        'osVersion',
-        'browser',
-        'deviceOrientation',
-        'ip'
+        "user_agent",
+        "browserVersion",
+        "os",
+        "osVersion",
+        "browser",
+        "deviceOrientation",
+        "ip",
       ];
       for (const field of requiredDeviceFields) {
         if (!body[field]) {

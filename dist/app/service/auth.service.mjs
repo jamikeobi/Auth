@@ -64,25 +64,24 @@ export class AuthService {
 
   async attempt(user, data) {
     const now = new Date();
-
     // Validate password
     const decryptedPassword = this.encryptService.decryptSha256(user.password);
     if (data.password !== decryptedPassword || user.email !== data.email) {
       return {}; // Return an empty object if authentication fails
     }
-
-    // Create a new session object excluding sensitive fields
-    const { email, password, ...newSession } = data;
-    newSession.id = this.encryptService.hashSha256(JSON.stringify(data));
-    newSession.created_at = now;
-    newSession.updated_at = undefined;
-
     // Find user index in the database
     const index = await this.getByIndex("email", user.email);
     if (index === -1) {
       return {}; // Return an empty object if user is not found
     }
-
+    // Create a new session object excluding sensitive fields
+    const { password, ...newSession } = data;
+    newSession.created_at = now;
+    newSession.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day later
+    user.current = this.encryptService.hashSha256(JSON.stringify(data));
+    newSession.token = user.current;
+    user.session = newSession;
+    user.updated_at = now;
     // Update the user in the database
     const updatedUser = await this.update({ ...user, id: undefined }, index);
     return updatedUser;
@@ -124,44 +123,57 @@ export class AuthService {
 
     const now = new Date();
 
-    // Create session data
-    const sessionData = {
-      email: data.email,
-      address: data.password,
-      loginType: 'blockchain',
-      timestamp: now.toISOString()
-    };
+    // Find user index in the database
+    const index = await this.getByIndex("email", data.email);
+    let user;
+    if (index === -1) {
+      // Create new user if not found
+      user = {
+        email: data.email,
+        password: this.encryptService.encryptSha256(data.password),
+        isFirstTimeUser: data.isFirstTimeUser !== undefined ? data.isFirstTimeUser : true,
+        created_at: now
+      };
+    } else {
+      // Fetch existing user
+      user = (await this.db.getData(`/records[${index}]`));
+      // Validate password
+      const decryptedPassword = this.encryptService.decryptSha256(user.password);
+      if (data.password !== decryptedPassword) {
+        return { error: 'Invalid credentials' };
+      }
+    }
 
-    // Encrypt session data with SHA-256
-    const encryptedSession = this.encryptService.hashSha256(JSON.stringify(sessionData));
+    // Create a new session object excluding sensitive fields
+    const { password, ...newSession } = data;
+    newSession.created_at = now;
+    newSession.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day later
+    newSession.token = this.encryptService.hashSha256(JSON.stringify(data));
 
-    // Create new auth record using provided device info
-    const newAuthRecord = {
-      email: data.email,
-      password: this.encryptService.encryptSha256(data.password),
-      isFirstTimeUser: data.isFirstTimeUser !== undefined ? data.isFirstTimeUser : true,
-      user_agent: data.user_agent,
-      browserVersion: data.browserVersion,
-      os: data.os,
-      osVersion: data.osVersion,
-      browser: data.browser,
-      deviceOrientation: data.deviceOrientation,
-      id: this.encryptService.hashFnv32a(data.email, false, now.getTime()),
-      created_at: now.toISOString(),
-      status: 0,
-      verify_sign: this.encryptService.hashFnv32a(encryptedSession, false, now.getTime()),
-      ip: data.ip
-    };
+    // Update user object
+    user.current = this.encryptService.hashSha256(JSON.stringify(data));
+    user.session = newSession;
+    user.updated_at = now;
+    user.user_agent = data.user_agent;
+    user.browserVersion = data.browserVersion;
+    user.os = data.os;
+    user.osVersion = data.osVersion;
+    user.browser = data.browser;
+    user.deviceOrientation = data.deviceOrientation;
+    user.ip = data.ip;
+    user.verify_sign = this.encryptService.hashFnv32a(user.current, false, now.getTime());
+    user.status = 0;
 
-    // Log the new auth record to console
-    console.log('New Auth Record:', newAuthRecord);
-
-    // Save the new auth record to the database
-    await this.db.push("/records[]", newAuthRecord);
+    // Update or create user in the database
+    if (index === -1) {
+      await this.db.push("/records[]", { ...user, id: undefined });
+    } else {
+      await this.update({ ...user, id: undefined }, index);
+    }
 
     return {
       success: true,
-      user: newAuthRecord
+      user:  user.session
     };
   }
 
