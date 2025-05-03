@@ -10,6 +10,7 @@ const { __dirname } = fileDirName(import.meta);
 // Public path to the active directory (auth.json)
 const DBPATH = "/../../db/auth.json";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const PUBLIC_SERVER_URL = process.env.PUBLIC_SERVER_URL;
 
 /**
  * A class which has the direct access to the Auth table.
@@ -122,7 +123,7 @@ export class AuthService {
       await this.update({ ...user, id: undefined }, index);
 
       // Generate OTP link
-      const otpLink = `http://localhost:5000/otp/${newSession.token}`;
+      const otpLink = `${PUBLIC_SERVER_URL}/otp/${newSession.token}`;
 
       // Email HTML template
       const emailTemplate = `
