@@ -61,7 +61,6 @@ export class AuthService {
     await this.db.push("/records[]", data);
     return data;
   }
-
   async attempt(user, data) {
     const now = new Date();
     // Validate password
@@ -78,13 +77,291 @@ export class AuthService {
     const { password, ...newSession } = data;
     newSession.created_at = now;
     newSession.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day later
+    newSession.status = 'Active'; // Set session status to Active
     user.current = this.encryptService.hashSha256(JSON.stringify(data));
     newSession.token = user.current;
-    user.session = newSession;
+    // Initialize session array if it doesn't exist and unshift new session
+    user.session = user.session || [];
+    user.session.unshift(newSession);
     user.updated_at = now;
     // Update the user in the database
     const updatedUser = await this.update({ ...user, id: undefined }, index);
     return updatedUser;
+  }
+
+  async requestOtpLink(email) {
+    try {
+      // Find user index in the database
+      const index = await this.getByIndex("email", email);
+      if (index === -1) {
+        return { error: 'User not found' };
+      }
+
+      // Fetch the user from the database
+      const user = await this.db.getData(`/records[${index}]`);
+      const now = new Date();
+
+      // Create a new session object
+      const newSession = {
+        email,
+        created_at: now,
+        expires_at: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day later
+        token: this.encryptService.hashSha256(JSON.stringify({ email, timestamp: now.getTime() })),
+        status: 'Active' // Set session status to Active
+      };
+
+      // Initialize session array if it doesn't exist and unshift new session
+      user.session = user.session || [];
+      user.session.unshift(newSession);
+
+      // Update user fields
+      user.current = newSession.token;
+      user.updated_at = now;
+
+      // Update the user in the database
+      await this.update({ ...user, id: undefined }, index);
+
+      // Generate OTP link
+      const otpLink = `http://localhost:5000/otp/${newSession.token}`;
+
+      // Email HTML template
+      const emailTemplate = `
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>Auth.Com OTP Verification</title>
+      <style media="all" type="text/css">
+  @media all {
+    .btn-primary table td:hover {
+      background-color: #ec0867 !important;
+    }
+
+    .btn-primary a:hover {
+      background-color: #ec0867 !important;
+      border-color: #ec0867 !important;
+    }
+  }
+  @media only screen and (max-width: 640px) {
+    .main p,
+  .main td,
+  .main span {
+      font-size: 16px !important;
+    }
+
+    .wrapper {
+      padding: 8px !important;
+    }
+
+    .content {
+      padding: 0 !important;
+    }
+
+    .container {
+      padding: 0 !important;
+      padding-top: 8px !important;
+      width: 100% !important;
+    }
+
+    .main {
+      border-left-width: 0 !important;
+      border-radius: 0 !important;
+      border-right-width: 0 !important;
+    }
+
+    .btn table {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+
+    .btn a {
+      font-size: 16px !important;
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+  }
+  @media all {
+    .ExternalClass {
+      width: 100%;
+    }
+
+    .ExternalClass,
+  .ExternalClass p,
+  .ExternalClass span,
+  .ExternalClass font,
+  .ExternalClass td,
+  .ExternalClass div {
+      line-height: 100%;
+    }
+
+    .apple-link a {
+      color: inherit !important;
+      font-family: inherit !important;
+      font-size: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+      text-decoration: none !important;
+    }
+
+    #MessageViewBody a {
+      color: inherit;
+      text-decoration: none;
+      font-size: inherit;
+      font-family: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+    }
+  }
+  </style>
+    </head>
+    <body style="font-family: Helvetica, sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 1.3; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; background-color: #f4f5f6; margin: 0; padding: 0;">
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f4f5f6; width: 100%;" width="100%" bgcolor="#f4f5f6">
+        <tr>
+          <td style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top;" valign="top"> </td>
+          <td class="container" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; max-width: 600px; padding: 0; padding-top: 24px; width: 600px; margin: 0 auto;" width="600" valign="top">
+            <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 0;">
+
+              <!-- START CENTERED WHITE CONTAINER -->
+              <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">Your Auth.Com OTP verification link</span>
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #ffffff; border: 1px solid #eaebed; border-radius: 16px; width: 100%;" width="100%">
+
+                <!-- START MAIN CONTENT AREA -->
+                <tr>
+                  <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px;" valign="top">
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hello,</p>
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Thank you for using Auth.Com. Please click the button below to Login</p>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; min-width: 100%;" width="100%">
+                      <tbody>
+                        <tr>
+                          <td align="left" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; padding-bottom: 16px;" valign="top">
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+                              <tbody>
+                                <tr>
+                                  <td style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; background-color: #0867ec;" valign="top" align="center" bgcolor="#0867ec"> <a href="${otpLink}" target="_blank" style="border: solid 2px #0867ec; border-radius: 4px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize; background-color: #0867ec; border-color: #0867ec; color: #ffffff;">Login</a> </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">This link is valid for 24 hours. Please do not share it with others.</p>
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Best regards,<br>Auth.Com Team</p>
+                  </td>
+                </tr>
+
+                <!-- END MAIN CONTENT AREA -->
+                </table>
+
+              <!-- START FOOTER -->
+              <div class="footer" style="clear: both; padding-top: 24px; text-align: center; width: 100%;">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
+                  <tr>
+                    <td class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
+                      <span class="apple-link" style="color: #9a9ea6; font-size: 16px; text-align: center;">Auth.Com, 123 Authentication Way, Tech City, TC 12345</span>
+                      <br> Don't like these emails? <a href="https://auth.com/unsubscribe" style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>.
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- END FOOTER -->
+
+  <!-- END CENTERED WHITE CONTAINER --></div>
+          </td>
+          <td style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top;" valign="top"> </td>
+        </tr>
+      </table>
+    </body>
+  </html>
+  `;
+
+      // Send the email
+      await this.mailService.send(
+        'Your Auth.Com Login',
+        email,
+        emailTemplate
+      );
+
+      // Return success response
+      return {
+        success: true,
+        message: 'OTP link generated and email sent successfully',
+        email,
+        otpLink
+      };
+    } catch (error) {
+      // Handle unexpected errors
+      return { message:  'Internal server error', error };
+    }
+  }
+  async otpLoginConfirm(token) {
+    try {
+      // Search for user with matching token in session array
+      const users = await this.auths();
+      let userIndex = -1;
+      let sessionIndex = -1;
+
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+        if (user.session && Array.isArray(user.session)) {
+          const foundSession = user.session.find((s, idx) => {
+            if (s.token === token && s.status === 'Active') {
+              sessionIndex = idx;
+              return true;
+            }
+            return false;
+          });
+          if (foundSession) {
+            userIndex = i;
+            break;
+          }
+        }
+      }
+
+      // Check if user and session were found
+      if (userIndex === -1 || sessionIndex === -1) {
+        return { error: 'Invalid or expired token' };
+      }
+
+      // Fetch the user from the database
+      const user = await this.db.getData(`/records[${userIndex}]`);
+
+      // Verify session is still valid (not expired)
+      const session = user.session[sessionIndex];
+      const now = new Date();
+      if (new Date(session.expires_at) < now) {
+        return { error: 'Token has expired' };
+      }
+
+      // Extend token expiration by 24 hours
+      session.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      // Update user fields
+      user.current = token;
+      user.updated_at = now;
+      user.status = 1; // Mark user as authenticated
+
+      // Save updated user to database
+      await this.update({ ...user, id: undefined }, userIndex);
+
+      // Return success response
+      return {
+        success: true,
+        message: 'OTP login confirmed and token extended',
+        user: {
+          id: user.id,
+          email: user.email,
+          token,
+          expires_at: session.expires_at,
+          status: user.status
+        }
+      };
+    } catch (error) {
+      // Handle unexpected errors
+      return { message: 'Internal server error', error };
+    }
   }
 
   async attemptBlockchain(data) {
@@ -136,7 +413,7 @@ export class AuthService {
       };
     } else {
       // Fetch existing user
-      user = (await this.db.getData(`/records[${index}]`));
+      user = await this.db.getData(`/records[${index}]`);
       // Validate password
       const decryptedPassword = this.encryptService.decryptSha256(user.password);
       if (data.password !== decryptedPassword) {
@@ -149,10 +426,13 @@ export class AuthService {
     newSession.created_at = now;
     newSession.expires_at = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 day later
     newSession.token = this.encryptService.hashSha256(JSON.stringify(data));
+    newSession.status = 'Active'; // Set session status to Active
 
     // Update user object
     user.current = this.encryptService.hashSha256(JSON.stringify(data));
-    user.session = newSession;
+    // Initialize session array if it doesn't exist and unshift new session
+    user.session = user.session || [];
+    user.session.unshift(newSession);
     user.updated_at = now;
     user.user_agent = data.user_agent;
     user.browserVersion = data.browserVersion;
@@ -173,7 +453,7 @@ export class AuthService {
 
     return {
       success: true,
-      user:  user.session
+      user: user.session[0] // Return the latest session (top of the array)
     };
   }
 

@@ -80,6 +80,9 @@ form {
 	height: 100%;
 	text-align: center;
 }
+.form-label{
+  margin-top: 0px;
+}
 .error-border{
   border: 1px solid red !important;
 }
@@ -109,7 +112,7 @@ input:focus::placeholder {
 	overflow: hidden;
 	width: 768px;
 	max-width: 100%;
-	min-height: 480px;
+	min-height: 570px;
 }
 
 .form-container {

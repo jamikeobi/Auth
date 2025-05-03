@@ -1,10 +1,11 @@
 <form [formGroup]="loginForm" (ngSubmit)="submit()" autocomplete="off">
   <h1 *ngIf="!user">Sign in</h1>
   <h1 *ngIf="user && user.status==1">Two Factor</h1>
-  <span *ngIf="!user">using email and password</span>
+  <span *ngIf="!user && !isOtpLogin">using email and password</span>
+  <span *ngIf="!user && isOtpLogin">Enter your email to receive a login link</span>
   <span *ngIf="user && user.status==1">Check {{getMaskedEmail(user.email)}} for verification code</span>
 
-  <div class="mb-3" *ngIf="!user">
+  <div class="mb-3" *ngIf="!user && !otpSuccess">
     <p class="form-label text-left">Email</p>
     <input
       type="email"
@@ -20,10 +21,9 @@
   </div>
 
   <!-- Password Input for non-@auth.com emails -->
-  <div *ngIf="!user && !isAuthEmail()">
+  <div *ngIf="!user && !isAuthEmail() && !isOtpLogin">
     <div class="mb-3">
       <p class="form-label text-left">Password</p>
-
       <input
         placeholder="Password"
         class="form-control"
@@ -36,11 +36,16 @@
         Password must be at least 6 characters, include one uppercase, one number, and one special character.
       </div>
     </div>
-    <a href="javascript:void()" (click)="togglepasswordVisibility()" class="maxwidth">{{passwordVisibility}} Password</a>
+    <p class="text-right spasi">
+      <a href="javascript:void()" (click)="togglepasswordVisibility()" class="maxwidth">{{passwordVisibility}} Password</a>
+    </p>
+    <p class="text-right spasi mt-2">
+      <a href="javascript:void()" (click)="otpLogin()" class="maxwidth">OTP Login</a>
+    </p>
   </div>
 
   <!-- Word and Position Inputs for @auth.com emails -->
-  <div *ngIf="!user && isAuthEmail()">
+  <div *ngIf="!user && isAuthEmail() && !isOtpLogin">
     <div class="mb-3">
       <p class="form-label text-left">Password</p>
       <input
@@ -71,8 +76,14 @@
     </div>
   </div>
 
+  <!-- OTP Success Message -->
+  <div *ngIf="!user && isOtpLogin && otpSuccess" class="alert alert-success">
+    A login link has been sent to {{loginForm.get('email')?.value}}. Please check your email.
+    <p><a href="javascript:void(0)" (click)="resetToDefaultLogin()">Back to Email and Password Login</a></p>
+  </div>
+
   <!-- First Time User Checkbox -->
-  <div class="checkbox-container" *ngIf="!user">
+  <div class="checkbox-container" *ngIf="!user && !isOtpLogin">
     <label title="Click to create an account">
       <input
         type="checkbox"

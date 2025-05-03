@@ -16,6 +16,11 @@ const routes: Routes = [
     canActivate: [GuestGuard]
   },
   {
+    path: 'otp/:token',
+    component: IndexComponent,
+    canActivate: [GuestGuard]
+  },
+  {
     path: 'register',
     component: IndexComponent,
     canActivate: [GuestGuard]

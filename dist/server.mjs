@@ -48,10 +48,9 @@ app.use(compression());
 app.get("/whois",tokenMiddleware, (req, res) => authController.whois(req, res));
 app.post("/sign-in", (req, res) => authController.login(req, res));
 app.post("/web3-sign-in", (req, res) => authController.web3login(req, res));
-app.post("/forgot-password", (req, res) => authController.web3login(req, res));
-app.post("/change-password", (req, res) => authController.web3login(req, res));
-app.post("/otp-request", (req, res) => authController.web3login(req, res));
-app.post("/otp-sign-in", (req, res) => authController.web3login(req, res));
+// app.post("/change-password", (req, res) => authController.web3login(req, res));
+app.post("/otp-request", (req, res) => authController.otpRequest(req, res));
+app.post("/otp-sign-in", (req, res) => authController.otpLogin(req, res));
 
 /* end of backend routes */
 app.use(function (req, res, next) {

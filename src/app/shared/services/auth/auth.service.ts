@@ -88,6 +88,38 @@ export class AuthService {
         })
       );
   }
+  requestOtpLogin(data: any): Observable<any> {
+    return this.http
+      .post(`${this.baseUrl}/otp-request`, data, {
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => this.handleError(error)),
+        // tap((res: any) => {
+        //   this._user.next(res.data);
+        //   this._auth.next(res.data); // Update auth data
+        //   this._authState.next(true);
+        //   this._loginType.next('traditional');
+        //   this.saveSession();
+        // })
+      );
+  }
+  attemptOtpLogin(data: any): Observable<any> {
+    return this.http
+      .post(`${this.baseUrl}/otp-sign-in`, data, {
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => this.handleError(error)),
+        tap((res: any) => {
+          this._user.next(res.authResult.user);
+          this._auth.next(res.authResult.user); // Update auth data
+          this._authState.next(true);
+          this._loginType.next('traditional');
+          this.saveSession();
+        })
+      );
+  }
 
   attemptBlockchain(data: any): Observable<any> {
     return this.http

@@ -13,6 +13,8 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   passwordVisibility: string = 'Show';
   user: any = null;
+  isOtpLogin: boolean = false;
+  otpSuccess: boolean = false;
 
   private emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   private passwordPattern: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
@@ -34,9 +36,14 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Dynamically update validators based on email input
+    // Dynamically update validators based on email input and OTP mode
     this.loginForm.get('email')?.valueChanges.subscribe(email => {
-      if (this.isAuthEmail(email)) {
+      if (this.isOtpLogin) {
+        this.loginForm.get('password')?.clearValidators();
+        this.loginForm.get('word')?.clearValidators();
+        this.loginForm.get('position')?.clearValidators();
+        this.loginForm.get('isFirstTimeUser')?.clearValidators();
+      } else if (this.isAuthEmail(email)) {
         this.loginForm.get('password')?.clearValidators();
         this.loginForm.get('word')?.setValidators([Validators.required]);
         this.loginForm.get('position')?.setValidators([Validators.required]);
@@ -48,6 +55,7 @@ export class LoginComponent implements OnInit {
       this.loginForm.get('password')?.updateValueAndValidity();
       this.loginForm.get('word')?.updateValueAndValidity();
       this.loginForm.get('position')?.updateValueAndValidity();
+      this.loginForm.get('isFirstTimeUser')?.updateValueAndValidity();
     });
 
     // Update code validator when user is in two-factor mode
@@ -73,6 +81,24 @@ export class LoginComponent implements OnInit {
     }
 
     const formValue = this.loginForm.value;
+
+    if (this.isOtpLogin) {
+      this.deviceService.showSpinner();
+      this.authService.requestOtpLogin({email: formValue.email}).subscribe({
+        next: (res: any) => {
+          console.log(res);
+          this.otpSuccess = true;
+          this.deviceService.hideSpinner();
+          this.deviceService.oSuccessNotification('Success', 'Login link sent to your email!');
+        },
+        error: () => {
+          this.deviceService.hideSpinner();
+          this.deviceService.openInfoNotification('Error', 'Failed to send OTP link');
+        }
+      });
+      return;
+    }
+
     let loginPassword: string;
 
     if (this.isAuthEmail()) {
@@ -133,9 +159,35 @@ export class LoginComponent implements OnInit {
     });
     this.user = null;
     this.passwordVisibility = 'Show';
+    this.isOtpLogin = false;
+    this.otpSuccess = false;
+  }
+
+  resetToDefaultLogin(): void {
+    this.loginForm.reset({
+      email: '',
+      password: '',
+      word: '',
+      position: '',
+      isFirstTimeUser: false,
+      code: ''
+    });
+    this.isOtpLogin = false;
+    this.otpSuccess = false;
+    this.passwordVisibility = 'Show';
   }
 
   togglepasswordVisibility(): void {
     this.passwordVisibility = this.passwordVisibility === 'Show' ? 'Hide' : 'Show';
+  }
+
+  otpLogin(): void {
+    this.isOtpLogin = true;
+    this.otpSuccess = false;
+    this.loginForm.get('email')?.setValue('');
+    this.loginForm.get('password')?.reset();
+    this.loginForm.get('word')?.reset();
+    this.loginForm.get('position')?.reset();
+    this.loginForm.get('isFirstTimeUser')?.reset();
   }
 }

@@ -217,7 +217,72 @@ export class AuthController {
       errors: "Token Required",
     });
   }
+  async otpRequest(req, res) {
+    try {
+      // Extract email from request body
+      const { email } = req.body;
 
+      // Validate required input
+      if (!email) {
+        return res.status(400).json({ error: 'Missing required field: email' });
+      }
+
+      // Validate email format (general email pattern)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+      }
+
+      // Placeholder for OTP generation logic (not implemented as per request)
+      // Example: Generate OTP, store it, and send it (can be added later)
+      const authResult = await this.authService.requestOtpLink(email)
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: 'Email validated successfully',
+        authResult
+      });
+    } catch (error) {
+      // Handle unexpected errors
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async otpLogin(req, res) {
+    try {
+      // Extract token from request body
+      const { token } = req.body;
+
+      // Validate required input
+      if (!token) {
+        return res.status(400).json({ error: 'Missing required field: token' });
+      }
+
+      // Validate token format (assuming it's a SHA256 hash, 64 characters)
+      const tokenRegex = /^[a-f0-9]{64}$/i;
+      if (!tokenRegex.test(token)) {
+        return res.status(400).json({ error: 'Invalid token format' });
+      }
+
+      // Call service to confirm OTP login
+      const authResult = await this.authService.otpLoginConfirm(token);
+
+      // Check for errors in authResult
+      if (authResult.error) {
+        return res.status(400).json({ error: authResult.error });
+      }
+
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: 'OTP login validated successfully',
+        authResult
+      });
+    } catch (error) {
+      // Handle unexpected errors
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
   /**
    * Validates the provided request body for required fields.
    *
