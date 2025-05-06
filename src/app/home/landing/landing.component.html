@@ -95,31 +95,63 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form #passwordForm="ngForm" (ngSubmit)="onChangePassword()">
-          <div class="mb-3">
+        <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword()">
+          <div class="mb-3 position-relative">
             <label for="currentPassword" class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="currentPassword" name="currentPassword" [(ngModel)]="changePassword.currentPassword" required>
+            <input
+              [type]="passwordVisibility.current ? 'text' : 'password'"
+              class="form-control"
+              id="currentPassword"
+              formControlName="currentPassword"
+              [ngClass]="{ 'error-border': changePasswordForm.get('currentPassword')?.invalid && changePasswordForm.get('currentPassword')?.touched }"
+            />
+            <span class="position-absolute end-0 top-50 translate-middle-y me-3 cursor-pointer" (click)="togglePasswordVisibility('current')">
+              <i class="fa" [ngClass]="passwordVisibility.current ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </span>
+            <div *ngIf="changePasswordForm.get('currentPassword')?.invalid && changePasswordForm.get('currentPassword')?.touched" class="text-danger">
+              Current password is required.
+            </div>
           </div>
-          <div class="mb-3">
+          <div class="mb-3 position-relative">
             <label for="newPassword" class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPassword" name="newPassword" [(ngModel)]="changePassword.newPassword" required
-                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$">
-            <div *ngIf="passwordForm.controls['newPassword']?.invalid && passwordForm.controls['newPassword']?.touched" class="text-danger">
+            <input
+              [type]="passwordVisibility.new ? 'text' : 'password'"
+              class="form-control"
+              id="newPassword"
+              formControlName="newPassword"
+              [ngClass]="{ 'error-border': changePasswordForm.get('newPassword')?.invalid && changePasswordForm.get('newPassword')?.touched }"
+            />
+            <span class="position-absolute end-0 top-50 translate-middle-y me-3 cursor-pointer" (click)="togglePasswordVisibility('new')">
+              <i class="fa" [ngClass]="passwordVisibility.new ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </span>
+            <div *ngIf="changePasswordForm.get('newPassword')?.invalid && changePasswordForm.get('newPassword')?.touched" class="text-danger">
               Password must be at least 6 characters, include one uppercase, one lowercase, one number, and one symbol.
             </div>
           </div>
-          <div class="mb-3">
+          <div class="mb-3 position-relative">
             <label for="confirmPassword" class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" [(ngModel)]="changePassword.confirmPassword" required>
-            <div *ngIf="changePassword.newPassword !== changePassword.confirmPassword && passwordForm.controls['confirmPassword']?.touched" class="text-danger">
+            <input
+              [type]="passwordVisibility.confirm ? 'text' : 'password'"
+              class="form-control"
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              [ngClass]="{ 'error-border': changePasswordForm.get('confirmPassword')?.invalid && changePasswordForm.get('confirmPassword')?.touched || changePasswordForm.errors?.mismatch && changePasswordForm.get('confirmPassword')?.touched }"
+            />
+            <span class="position-absolute end-0 top-50 translate-middle-y me-3 cursor-pointer" (click)="togglePasswordVisibility('confirm')">
+              <i class="fa" [ngClass]="passwordVisibility.confirm ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </span>
+            <div *ngIf="changePasswordForm.get('confirmPassword')?.invalid && changePasswordForm.get('confirmPassword')?.touched" class="text-danger">
+              Confirm password is required.
+            </div>
+            <div *ngIf="changePasswordForm.errors?.mismatch && changePasswordForm.get('confirmPassword')?.touched" class="text-danger">
               Passwords do not match.
             </div>
           </div>
-          <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || changePassword.newPassword !== changePassword.confirmPassword">Submit</button>
+          <button type="submit" class="btn btn-primary" [disabled]="changePasswordForm.invalid || changePasswordForm.errors?.mismatch">Submit</button>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button data-bs-dismiss="modal" type="submit" class="btn btn-primary" [disabled]="changePasswordForm.invalid || changePasswordForm.errors?.mismatch">Submit</button>
       </div>
     </div>
   </div>

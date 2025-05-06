@@ -62,6 +62,7 @@ export class AuthService {
     await this.db.push("/records[]", data);
     return data;
   }
+
   async attempt(user, data) {
     const now = new Date();
     // Validate password
@@ -294,9 +295,10 @@ export class AuthService {
       };
     } catch (error) {
       // Handle unexpected errors
-      return { message:  'Internal server error', error };
+      return { message: 'Internal server error', error };
     }
   }
+
   async otpLoginConfirm(token) {
     try {
       // Search for user with matching token in session array
@@ -456,6 +458,61 @@ export class AuthService {
       success: true,
       user: user.session[0] // Return the latest session (top of the array)
     };
+  }
+
+  async changePassword(data) {
+    try {
+      // Validate required input data
+      if (!data.currentPassword || !data.newPassword || !data.confirmPassword || !data.token) {
+        return { error: 'Missing required fields: currentPassword, newPassword, confirmPassword, token' };
+      }
+
+      // Validate newPassword format
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+      if (!passwordRegex.test(data.newPassword)) {
+        return { error: 'New password must be at least 6 characters, include one uppercase, one lowercase, one number, and one symbol' };
+      }
+
+      // Check if newPassword matches confirmPassword
+      if (data.newPassword !== data.confirmPassword) {
+        return { error: 'New password and confirm password do not match' };
+      }
+
+      // Find user by token in the 'current' field
+      const users = await this.auths();
+      const userIndex = users.findIndex((u) => u.current === data.token);
+
+      // Check if user was found
+      if (userIndex === -1) {
+        return { error: 'Invalid or expired token' };
+      }
+
+      // Fetch the user from the database
+      const user = await this.db.getData(`/records[${userIndex}]`);
+
+      // Validate current password
+      const decryptedPassword = this.encryptService.decryptSha256(user.password);
+      if (data.currentPassword !== decryptedPassword) {
+        return { error: 'Current password is incorrect' };
+      }
+
+      // Encrypt and update the new password
+      user.password = this.encryptService.encryptSha256(data.newPassword);
+      user.updated_at = new Date();
+
+      // Save updated user to database
+      await this.update({ ...user, id: undefined }, userIndex);
+
+      // Return success response
+      return {
+        success: true,
+        message: 'Password changed successfully',
+        user
+      };
+    } catch (error) {
+      // Handle unexpected errors
+      return { message: 'Internal server error', error };
+    }
   }
 
   /**

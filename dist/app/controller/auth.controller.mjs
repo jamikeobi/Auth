@@ -283,6 +283,29 @@ export class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+  async updatePassword(req, res) {
+    console.log(req.body)
+    try {
+      req.body.token = req.token;
+      // Call service to confirm OTP login
+      const authResult = await this.authService.changePassword(req.body);
+
+      // Check for errors in authResult
+      if (authResult.error) {
+        return res.status(400).json({ error: authResult.error });
+      }
+
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: 'Password updated successfully',
+        authResult
+      });
+    } catch (error) {
+      // Handle unexpected errors
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
   /**
    * Validates the provided request body for required fields.
    *

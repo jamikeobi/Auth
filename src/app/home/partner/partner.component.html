@@ -1,0 +1,91 @@
+<div class="container">
+  <!-- Title section -->
+  <div class="title">Partner Registration</div>
+  <div class="content">
+    <!-- Registration form -->
+    <form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
+      <div class="user-details">
+        <!-- Input for Name -->
+        <div class="input-box">
+          <span class="details">Name</span>
+          <input
+            type="text"
+            placeholder="Enter partner name"
+            formControlName="name"
+            [ngClass]="{ 'error-border': partnerForm.get('name')?.invalid && partnerForm.get('name')?.touched }"
+          />
+          <div *ngIf="partnerForm.get('name')?.invalid && partnerForm.get('name')?.touched" class="text-danger">
+            Name is required and must be 3-50 characters.
+          </div>
+        </div>
+        <!-- Input for Website URL -->
+        <div class="input-box">
+          <span class="details">Website URL</span>
+          <input
+            type="url"
+            placeholder="Enter website URL (e.g., https://example.com)"
+            formControlName="websiteUrl"
+            [ngClass]="{ 'error-border': partnerForm.get('websiteUrl')?.invalid && partnerForm.get('websiteUrl')?.touched }"
+          />
+          <div *ngIf="partnerForm.get('websiteUrl')?.invalid && partnerForm.get('websiteUrl')?.touched" class="text-danger">
+            Valid URL is required (e.g., https://example.com).
+          </div>
+        </div>
+        <!-- Input for Success Redirect -->
+        <div class="input-box">
+          <span class="details">Success Redirect</span>
+          <input
+            type="url"
+            placeholder="Enter success redirect URL"
+            formControlName="successUrl"
+            [ngClass]="{ 'error-border': partnerForm.get('successUrl')?.invalid && partnerForm.get('successUrl')?.touched }"
+          />
+          <div *ngIf="partnerForm.get('successUrl')?.invalid && partnerForm.get('successUrl')?.touched" class="text-danger">
+            Valid URL is required (e.g., https://example.com/success).
+          </div>
+        </div>
+        <!-- Input for Error Redirect -->
+        <div class="input-box">
+          <span class="details">Error Redirect</span>
+          <input
+            type="url"
+            placeholder="Enter error redirect URL"
+            formControlName="errorUrl"
+            [ngClass]="{ 'error-border': partnerForm.get('errorUrl')?.invalid && partnerForm.get('errorUrl')?.touched }"
+          />
+          <div *ngIf="partnerForm.get('errorUrl')?.invalid && partnerForm.get('errorUrl')?.touched" class="text-danger">
+            Valid URL is required (e.g., https://example.com/error).
+          </div>
+        </div>
+        <!-- Input for Logo Link -->
+        <div class="input-box">
+          <span class="details">Logo Link</span>
+          <input
+            type="url"
+            placeholder="Enter logo URL (e.g., https://example.com/logo.png)"
+            formControlName="logoUrl"
+            [ngClass]="{ 'error-border': partnerForm.get('logoUrl')?.invalid && partnerForm.get('logoUrl')?.touched }"
+          />
+          <div *ngIf="partnerForm.get('logoUrl')?.invalid && partnerForm.get('logoUrl')?.touched" class="text-danger">
+            Valid URL is required for logo (e.g., https://example.com/logo.png).
+          </div>
+        </div>
+        <!-- Input for Short Name (Abv) -->
+        <div class="input-box">
+          <span class="details">Short Name</span>
+          <input
+            type="text"
+            placeholder="Enter short name (e.g., ABC)"
+            formControlName="Abv"
+            [ngClass]="{ 'error-border': partnerForm.get('Abv')?.invalid && partnerForm.get('Abv')?.touched }"
+          />
+          <div *ngIf="partnerForm.get('Abv')?.invalid && partnerForm.get('Abv')?.touched" class="text-danger">
+            Short name is required and must be 2-10 characters.
+          </div>
+        </div>
+      </div>
+      <!-- Submit button -->
+      <button type="submit" class="btn btn-primary" [disabled]="partnerForm.invalid">Register</button>
+    </form>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { ScriptsService } from '../client/scripts.service';
 import { DeviceService } from '../client/device.service';
 import { environment } from 'src/environments/environment';
@@ -107,6 +107,27 @@ export class AuthService {
   attemptOtpLogin(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/otp-sign-in`, data, {
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => this.handleError(error)),
+        tap((res: any) => {
+          this._user.next(res.authResult.user);
+          this._auth.next(res.authResult.user); // Update auth data
+          this._authState.next(true);
+          this._loginType.next('traditional');
+          this.saveSession();
+        })
+      );
+  }
+  updatePassword(data: any): Observable<any> {
+    const token = this.getAuthData()?.token || '';
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http
+      .post(`${this.baseUrl}/update-password`, data, {
+        headers,
         params: new HttpParams(),
       })
       .pipe(

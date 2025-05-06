@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { ScriptsService } from 'src/app/shared/services/client/scripts.service';
 import { Web3Service } from 'src/app/shared/services/crypto/web3.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-landing',
@@ -22,12 +23,11 @@ export class LandingComponent implements OnInit, OnDestroy {
   private authStateSub: Subscription;
   private loginTypeSub: Subscription;
   private userSub: Subscription;
-
-  // Change Password Form
-  changePassword = {
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+  changePasswordForm: FormGroup;
+  passwordVisibility = {
+    current: false,
+    new: false,
+    confirm: false
   };
 
   // Configure Email & Password Form (Blockchain)
@@ -44,11 +44,17 @@ export class LandingComponent implements OnInit, OnDestroy {
     private router: Router,
     private deviceDetectorService: DeviceDetectorService,
     private scriptsService: ScriptsService,
-    private web3Service: Web3Service
+    private web3Service: Web3Service,
+    private fb: FormBuilder
   ) {
     this.authStateSub = new Subscription();
     this.loginTypeSub = new Subscription();
     this.userSub = new Subscription();
+    this.changePasswordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
   }
 
   ngOnInit(): void {
@@ -94,6 +100,17 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.authStateSub.unsubscribe();
     this.loginTypeSub.unsubscribe();
     this.userSub.unsubscribe();
+  }
+
+  // Validator to check if newPassword and confirmPassword match
+  passwordMatchValidator(form: FormGroup) {
+    return form.get('newPassword')?.value === form.get('confirmPassword')?.value
+      ? null
+      : { mismatch: true };
+  }
+
+  togglePasswordVisibility(field: 'current' | 'new' | 'confirm'): void {
+    this.passwordVisibility[field] = !this.passwordVisibility[field];
   }
 
   updateHash(): void {
@@ -154,10 +171,26 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   onChangePassword(): void {
-    console.log('Change Password Details:', this.changePassword);
-    // Add your API call here
-    this.changePassword = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    document.getElementById('changePasswordModalClose')?.click();
+    if (this.changePasswordForm.valid) {
+      const passwordData = {
+        currentPassword: this.changePasswordForm.get('currentPassword')?.value,
+        newPassword: this.changePasswordForm.get('newPassword')?.value,
+        confirmPassword: this.changePasswordForm.get('confirmPassword')?.value,
+      };
+      console.log('Change Password Details:', passwordData);
+      this.authService.updatePassword(passwordData).subscribe({
+        next: (res) => {
+          console.log('Password change response:', res);
+          this.changePasswordForm.reset();
+          this.passwordVisibility = { current: false, new: false, confirm: false };
+          // document.getElementById('changePasswordModalClose')?.click();
+          this.logout();
+        },
+        error: (err) => console.log('Password change error:', err)
+      });
+    } else {
+      this.changePasswordForm.markAllAsTouched();
+    }
   }
 
   logout(): void {

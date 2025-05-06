@@ -8,6 +8,7 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { ForgotComponent } from './forgot/forgot.component';
 import { LandingComponent } from './landing/landing.component';
+import { PartnerComponent } from './partner/partner.component';
 
 
 @NgModule({
@@ -16,7 +17,8 @@ import { LandingComponent } from './landing/landing.component';
     LoginComponent,
     RegisterComponent,
     ForgotComponent,
-    LandingComponent
+    LandingComponent,
+    PartnerComponent
   ],
   imports: [
     CommonModule,
