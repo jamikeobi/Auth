@@ -52,15 +52,26 @@ export class AuthService {
     );
     data.id = id;
     data.password = this.encryptService.encryptSha256(data.password);
+    data.apikey = this.encryptService.generateApiKey(data.password, data.email);
     // Set the created and updated at properties
     data.created_at = now;
+    data.session = [];
     data.updated_at = undefined;
-
     // Set the active property
     data.status = 0;
+    data.current = this.encryptService.hashSha256(JSON.stringify(data));
     data.verify_sign = this.encryptService.hashFnv32a(`${id}`, false, now);
+    const newSession = {
+      created_at: now,
+      expires_at:new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day later
+      status: 'Active', // Set session status to Active
+      token: data.current,
+      ip: data.ip,
+    };
+    // Initialize session array if it doesn't exist and unshift new session
+    data.session.unshift(newSession);
     await this.db.push("/records[]", data);
-    return data;
+    return {...data, password:undefined};
   }
 
   async attempt(user, data) {
@@ -82,6 +93,7 @@ export class AuthService {
     newSession.status = 'Active'; // Set session status to Active
     user.current = this.encryptService.hashSha256(JSON.stringify(data));
     newSession.token = user.current;
+    newSession.ip = data.ip;
     // Initialize session array if it doesn't exist and unshift new session
     user.session = user.session || [];
     user.session.unshift(newSession);

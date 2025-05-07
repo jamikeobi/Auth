@@ -6,6 +6,7 @@ import { DeviceDetectorService } from 'ngx-device-detector';
 import { ScriptsService } from 'src/app/shared/services/client/scripts.service';
 import { Web3Service } from 'src/app/shared/services/crypto/web3.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DeviceService } from 'src/app/shared/services/client/device.service';
 
 @Component({
   selector: 'app-landing',
@@ -45,7 +46,8 @@ export class LandingComponent implements OnInit, OnDestroy {
     private deviceDetectorService: DeviceDetectorService,
     private scriptsService: ScriptsService,
     private web3Service: Web3Service,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private ds:DeviceService
   ) {
     this.authStateSub = new Subscription();
     this.loginTypeSub = new Subscription();
@@ -94,6 +96,7 @@ export class LandingComponent implements OnInit, OnDestroy {
 
     // Get device information
     this.deviceInfo = this.deviceDetectorService.getDeviceInfo();
+    this.checkRender();
   }
 
   ngOnDestroy(): void {
@@ -178,15 +181,18 @@ export class LandingComponent implements OnInit, OnDestroy {
         confirmPassword: this.changePasswordForm.get('confirmPassword')?.value,
       };
       console.log('Change Password Details:', passwordData);
+      this.ds.showSpinner();
       this.authService.updatePassword(passwordData).subscribe({
         next: (res) => {
+          this.ds.hideSpinner()
           console.log('Password change response:', res);
+          this.ds.oSuccessNotification('Please Login', res.message);
           this.changePasswordForm.reset();
           this.passwordVisibility = { current: false, new: false, confirm: false };
-          // document.getElementById('changePasswordModalClose')?.click();
+          document.getElementById('changePasswordModalClose')?.click();
           this.logout();
         },
-        error: (err) => console.log('Password change error:', err)
+        error: (err) => this.ds.hideSpinner()
       });
     } else {
       this.changePasswordForm.markAllAsTouched();
@@ -197,5 +203,11 @@ export class LandingComponent implements OnInit, OnDestroy {
     document.getElementById('closeLogout')?.click();
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+  checkRender(){
+    window.parent.postMessage(
+      { type: 'loginSuccess', auth: {...this.authService.getAuth(), password:undefined} },
+      'http://localhost:5001'
+    );
   }
 }

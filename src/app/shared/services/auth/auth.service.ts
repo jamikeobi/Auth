@@ -18,6 +18,14 @@ export class AuthService {
   private _authState: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private authState$: Observable<boolean> = this._authState.asObservable();
 
+  // BehaviorSubject for apiKey
+  private _apiKey: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  public apiKey$: Observable<string | null> = this._apiKey.asObservable();
+
+  // BehaviorSubject for token
+  private _token: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  public token$: Observable<string | null> = this._token.asObservable();
+
   // Subjects for auth and user data
   private _auth: BehaviorSubject<any> = new BehaviorSubject(null);
   private _user: BehaviorSubject<any> = new BehaviorSubject(null);
@@ -34,10 +42,24 @@ export class AuthService {
     this.restoreSession();
   }
 
+  // Public method to set apiKey
+  public setApiKey(apiKey: string | null): void {
+    this._apiKey.next(apiKey);
+    this.saveSession();
+  }
+
+  // Public method to set token
+  public setToken(token: string | null): void {
+    this._token.next(token);
+    this._auth.next({ ...this._auth.getValue(), token });
+    this.saveSession();
+    this._authState.next(!!token);
+  }
+
   // Methods for login type
   setLoginType(type: 'traditional' | 'blockchain'): void {
     this._loginType.next(type);
-    this.saveSession(); // Update session storage with new login type
+    this.saveSession();
   }
 
   getLoginType(): 'traditional' | 'blockchain' {
@@ -51,20 +73,42 @@ export class AuthService {
   // Methods for auth state
   setAuthState(state: boolean): void {
     this._authState.next(state);
-    this.saveSession(); // Update session storage with new auth state
+    this.saveSession();
   }
 
   getAuthState(): boolean {
     return this._authState.getValue();
   }
 
+  getAuth(): any {
+    return this._auth.getValue();
+  }
+
   getAuthStateObservable(): Observable<boolean> {
     return this.authState$;
+  }
+
+  // Helper method to create headers with apiKey and token
+  private createHeaders(): HttpHeaders {
+    let headers = new HttpHeaders();
+    const token = this._token.getValue();
+    const apiKey = this._apiKey.getValue();
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (apiKey) {
+      headers = headers.set('apiKey', apiKey);
+    }
+    console.log(headers);
+
+    return headers;
   }
 
   register(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/sign-up`, data, {
+        headers: this.createHeaders(),
         params: new HttpParams(),
       })
       .pipe(
@@ -75,66 +119,64 @@ export class AuthService {
   login(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/sign-in`, data, {
+        headers: this.createHeaders(),
         params: new HttpParams(),
       })
       .pipe(
         catchError(error => this.handleError(error)),
         tap((res: any) => {
           this._user.next(res.data);
-          this._auth.next(res.data); // Update auth data
+          this._auth.next(res.data);
+          this._token.next(res.data?.token || null); // Assuming response includes token
           this._authState.next(true);
           this._loginType.next('traditional');
           this.saveSession();
         })
       );
   }
+
   requestOtpLogin(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/otp-request`, data, {
+        headers: this.createHeaders(),
         params: new HttpParams(),
       })
       .pipe(
-        catchError(error => this.handleError(error)),
-        // tap((res: any) => {
-        //   this._user.next(res.data);
-        //   this._auth.next(res.data); // Update auth data
-        //   this._authState.next(true);
-        //   this._loginType.next('traditional');
-        //   this.saveSession();
-        // })
+        catchError(error => this.handleError(error))
       );
   }
+
   attemptOtpLogin(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/otp-sign-in`, data, {
+        headers: this.createHeaders(),
         params: new HttpParams(),
       })
       .pipe(
         catchError(error => this.handleError(error)),
         tap((res: any) => {
           this._user.next(res.authResult.user);
-          this._auth.next(res.authResult.user); // Update auth data
+          this._auth.next(res.authResult.user);
+          this._token.next(res.authResult.user?.token || null); // Assuming token in response
           this._authState.next(true);
           this._loginType.next('traditional');
           this.saveSession();
         })
       );
   }
+
   updatePassword(data: any): Observable<any> {
-    const token = this.getAuthData()?.token || '';
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
     return this.http
       .post(`${this.baseUrl}/update-password`, data, {
-        headers,
+        headers: this.createHeaders(),
         params: new HttpParams(),
       })
       .pipe(
         catchError(error => this.handleError(error)),
         tap((res: any) => {
           this._user.next(res.authResult.user);
-          this._auth.next(res.authResult.user); // Update auth data
+          this._auth.next(res.authResult.user);
+          this._token.next(res.authResult.user?.token || null); // Assuming token in response
           this._authState.next(true);
           this._loginType.next('traditional');
           this.saveSession();
@@ -145,6 +187,7 @@ export class AuthService {
   attemptBlockchain(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/web3-sign-in`, data, {
+        headers: this.createHeaders(),
         params: new HttpParams(),
       })
       .pipe(
@@ -153,7 +196,8 @@ export class AuthService {
           if (res.data && res.data.success) {
             const user = res.data.user;
             this._user.next(user);
-            this._auth.next(user); // Update auth data
+            this._auth.next(user);
+            this._token.next(user?.token || null); // Assuming token in response
             this._authState.next(true);
             this._loginType.next('blockchain');
             this.saveSession();
@@ -163,11 +207,7 @@ export class AuthService {
   }
 
   store(token: string): void {
-    const sessionData = this.getSessionData() || {};
-    sessionData.token = token;
-    this._auth.next(sessionData);
-    this.saveSession();
-    this._authState.next(true);
+    this.setToken(token); // Use setToken to update token and session
   }
 
   getAuthData(): any {
@@ -210,6 +250,8 @@ export class AuthService {
     this._auth.next(null);
     this._authState.next(false);
     this._loginType.next('traditional');
+    this._apiKey.next(null);
+    this._token.next(null);
   }
 
   logout(): void {
@@ -222,7 +264,8 @@ export class AuthService {
         user: this._user.getValue(),
         auth: this._auth.getValue(),
         loginType: this._loginType.getValue(),
-        token: this._auth.getValue()?.token,
+        token: this._token.getValue(),
+        apiKey: this._apiKey.getValue(),
         codeToken: this._auth.getValue()?.codeToken
       };
       const encryptedSession = this.scriptService.encryptSha256(JSON.stringify(sessionData));
@@ -243,13 +286,13 @@ export class AuthService {
     try {
       const decryptedSession = this.scriptService.decryptSha256(encryptedSession);
       const sessionData = JSON.parse(decryptedSession);
-      console.log(sessionData);
-      console.log(decryptedSession);
 
       this._user.next(sessionData.user || null);
       this._auth.next(sessionData.auth || null);
       this._loginType.next(sessionData.loginType || 'traditional');
-      this._authState.next(true);
+      this._apiKey.next(sessionData.apiKey || null);
+      this._token.next(sessionData.token || null);
+      this._authState.next(!!sessionData.token);
     } catch (error) {
       console.error('Failed to decrypt and restore session:', error);
       this.deviceService.oErrorNotification('Error', 'Failed to restore session');
@@ -274,7 +317,6 @@ export class AuthService {
   }
 
   private handleError(error: any): Observable<never> {
-    this.deviceService.oErrorNotification('Oops', error.error?.message || 'An error occurred');
     return throwError(() => error);
   }
 }

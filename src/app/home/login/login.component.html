@@ -18,6 +18,10 @@
     <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="text-danger">
       Please enter a valid email.
     </div>
+    <!-- Link to switch back to email login during OTP login -->
+    <p *ngIf="isOtpLogin" class="text-right spasi mt-2">
+      <a href="javascript:void(0)" (click)="resetToDefaultLogin()" class="maxwidth">Back to Email and Password Login</a>
+    </p>
   </div>
 
   <!-- Password Input for non-@auth.com emails -->

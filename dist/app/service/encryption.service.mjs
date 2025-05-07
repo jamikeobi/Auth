@@ -45,4 +45,13 @@ export class EncryptionService {
   decryptSha256(data) {
     return sjcl.decrypt(this.psk, data);
   }
+  generateApiKey(password, email){
+    const encryptpasssword = this.encryptSha256(password);
+    const encryptemail = this.encryptSha256(email);
+    const hashEncryptedPassword = this.hashFnv32a(JSON.stringify(encryptpasssword), true, Date.now());
+    const hashEncryptedEmail = this.hashFnv32a(JSON.stringify(encryptemail), true, Date.now());
+    const almost = this.hashFnv32a(`${hashEncryptedPassword}${hashEncryptedEmail}`, true, Math.random());
+    const apikey = this.hashSha256(almost);
+    return apikey; 
+  }
 }

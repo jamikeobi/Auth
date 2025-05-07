@@ -10,6 +10,13 @@ const routes: Routes = [
     resolve:{
       fromSock: SockResolver
     }
+  },
+  {
+    path: 'external/:api',
+    loadChildren: ()=> import('./home/home.module').then(m => m.HomeModule),
+    resolve:{
+      fromSock: SockResolver
+    }
   }
 ];
 

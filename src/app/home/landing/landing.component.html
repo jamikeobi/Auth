@@ -92,7 +92,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="changePasswordModalClose"></button>
       </div>
       <div class="modal-body">
         <form [formGroup]="changePasswordForm" (ngSubmit)="onChangePassword()">
@@ -151,7 +151,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button data-bs-dismiss="modal" type="submit" class="btn btn-primary" [disabled]="changePasswordForm.invalid || changePasswordForm.errors?.mismatch">Submit</button>
+        <!-- <button data-bs-dismiss="modal" type="submit" class="btn btn-primary" [disabled]="changePasswordForm.invalid || changePasswordForm.errors?.mismatch">Submit</button> -->
       </div>
     </div>
   </div>

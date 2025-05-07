@@ -73,7 +73,7 @@ export class LoginComponent implements OnInit {
     return email.toLowerCase().endsWith('@auth.com');
   }
 
-  submit(): void {
+  async submit() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       this.deviceService.openInfoNotification('Oops', 'Please fill in all required fields correctly');
@@ -110,10 +110,19 @@ export class LoginComponent implements OnInit {
     }
 
     this.deviceService.showSpinner();
+        // Fetch IP address
+        let ip = '0.0.0.0'; // Fallback IP
+        try {
+          ip = await this.deviceService.getIp().toPromise();
+        } catch (err) {
+          console.error('Failed to fetch IP:', err);
+          this.deviceService.oErrorNotification('Error', 'Failed to fetch IP address, using fallback IP');
+        }
     this.authService.login({
       email: formValue.email,
       password: loginPassword,
-      isFirstTimeUser: formValue.isFirstTimeUser
+      isFirstTimeUser: formValue.isFirstTimeUser,
+      ip
     }).subscribe({
       next: (res: any) => {
         console.log('User logged in:', res.data);

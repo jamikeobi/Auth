@@ -77,6 +77,7 @@ export class AuthController {
           .json({ message: "Login successful", data: authResult });
       } else {
         const finding = await this.authService.getBy("email", body.email);
+        console.log(finding)
         if (finding) {
           return res.status(404).json({
             message:

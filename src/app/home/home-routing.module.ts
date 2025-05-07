@@ -34,7 +34,7 @@ const routes: Routes = [
   {
     path: 'partner',
     component: PartnerComponent,
-    canActivate: [AuthGuard]
+    // canActivate: [AuthGuard]
   },
 
 ];
