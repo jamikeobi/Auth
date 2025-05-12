@@ -21,6 +21,7 @@ const PUBLIC_SERVER_URL = process.env.PUBLIC_SERVER_URL;
  * findBy(field, value);
  * delete(code)
  * update(code, data)
+ * revokeApi(index)
  */
 export class AuthService {
   db = new JsonDB(new Config(__dirname + DBPATH, true, true, "/"));
@@ -63,7 +64,7 @@ export class AuthService {
     data.verify_sign = this.encryptService.hashFnv32a(`${id}`, false, now);
     const newSession = {
       created_at: now,
-      expires_at:new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day later
+      expires_at: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day later
       status: 'Active', // Set session status to Active
       token: data.current,
       ip: data.ip,
@@ -71,7 +72,42 @@ export class AuthService {
     // Initialize session array if it doesn't exist and unshift new session
     data.session.unshift(newSession);
     await this.db.push("/records[]", data);
-    return {...data, password:undefined};
+    return { ...data, password: undefined };
+  }
+
+  /**
+   * Revoke and regenerate API key for a user at the specified index
+   * @param index is the index of the user in the records array
+   * @returns Object - Updated user record excluding password
+   */
+  async revokeApi(index) {
+    try {
+      // Fetch the user at the specified index
+      const user = await this.db.getData(`/records[${index}]`);
+      if (!user) {
+        return { error: 'User not found at specified index' };
+      }
+
+      // Regenerate API key
+      const newApiKey = this.encryptService.generateApiKey(
+        user.password,
+        user.email
+      );
+
+      // Update user fields
+      user.apikey = newApiKey;
+      user.updated_at = new Date();
+
+      // Save updated user to database
+      await this.update({ ...user, id: undefined }, index);
+
+      // Return user record excluding password
+      return { ...user, password: undefined };
+    } catch (error) {
+      // Handle unexpected errors
+      console.error('Error revoking API key:', error);
+      return { error: 'Failed to revoke API key', details: error.message };
+    }
   }
 
   async attempt(user, data) {

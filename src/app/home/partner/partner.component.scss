@@ -156,3 +156,78 @@ form .button input:hover {
     flex-direction: column;
   }
 }
+
+/* Existing styles */
+.token-section {
+  margin-bottom: 20px;
+}
+
+.token-actions a {
+  margin-right: 15px;
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.websites-table {
+  margin-bottom: 20px;
+}
+
+.websites-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.websites-table th,
+.websites-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.websites-table th {
+  background-color: #f2f2f2;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+/* New styles for scrollable table */
+.table-container {
+  max-width: 100%; /* Ensures container doesn't exceed parent width */
+  overflow-x: auto; /* Enables horizontal scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.table-container table {
+  min-width: 1200px; /* Ensures table is wide enough to trigger scrolling */
+  width: 100%; /* Table takes full container width */
+}
+
+.websites-table td,
+.websites-table th {
+  white-space: nowrap; /* Prevents text wrapping in cells */
+}
+
+/* Optional: Custom scrollbar styling for modern browsers */
+.table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

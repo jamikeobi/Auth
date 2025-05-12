@@ -18,6 +18,7 @@ import tokenMiddleware from './middleware/token.mjs';
 import busboy from "connect-busboy";
 import { SocketController } from "./app/controller/socket.controller.mjs";
 import { AuthController } from "./app/controller/auth.controller.mjs";
+import apiKeyMiddleware from "./middleware/api.mjs";
 dotenv.config();
 const PORT = process.env.PORT || process.env.NODE_ENV;
 const { __dirname } = fileDirName(import.meta);
@@ -45,12 +46,14 @@ app.use(compression());
 /* other middleware */
 
 /* place any backend routes you have here */
-app.get("/whois",tokenMiddleware, (req, res) => authController.whois(req, res));
 app.post("/sign-in", (req, res) => authController.login(req, res));
 app.post("/web3-sign-in", (req, res) => authController.web3login(req, res));
-app.post("/update-password",tokenMiddleware, (req, res) => authController.updatePassword(req, res));
 app.post("/otp-request", (req, res) => authController.otpRequest(req, res));
 app.post("/otp-sign-in", (req, res) => authController.otpLogin(req, res));
+app.get("/whois",[tokenMiddleware], (req, res) => authController.whois(req, res));
+app.post("/update-password",[tokenMiddleware], (req, res) => authController.updatePassword(req, res));
+app.post("/api-settings", [tokenMiddleware, apiKeyMiddleware], (req, res) => authController.handleApiSettings(req, res));
+app.post("/revoke-api",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.handleTokenRevoke(req, res));
 
 /* end of backend routes */
 app.use(function (req, res, next) {

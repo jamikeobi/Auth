@@ -22,9 +22,10 @@
   <a *ngIf="loginType === 'Traditional'" href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
     <i class="fa fa-lock me-2"></i> Change Password
   </a>
-  <!-- <a *ngIf="loginType === 'Blockchain'" href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" data-bs-toggle="modal" data-bs-target="#configureEmailPasswordModal">
-    <i class="fa fa-cog me-2"></i> Configure Email & Password
-  </a> -->
+  <br>
+  <a  href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center mb-2" [routerLink]="['/api']">
+    <i class="fa fa-cog me-2"></i> API Setting
+  </a>
   <br>
   <!-- Log Out Link -->
   <a href="javascript:void(0)" class="d-inline-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#logoutModal">

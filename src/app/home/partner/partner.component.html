@@ -1,7 +1,52 @@
 <div class="container">
   <!-- Title section -->
-  <div class="title">Partner Registration</div>
+  <div class="title">API Settings</div>
   <div class="content">
+    <!-- API Token Section -->
+    <div class="token-section">
+      <p>Current API Token: <strong>{{ apiToken }}</strong></p>
+      <div class="token-actions">
+        <a href="javascript:void(0)" (click)="revokeToken()">Revoke Token</a>
+        <a href="javascript:void(0)" (click)="copyToken()">Copy</a>
+      </div>
+    </div>
+
+    <!-- Websites Table -->
+    <div class="websites-table">
+      <h3>Websites</h3>
+      <div class="table-container">
+        <table *ngIf="websites.length > 0; else noWebsites">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Website URL</th>
+              <th>Success Redirect</th>
+              <th>Error Redirect</th>
+              <th>Logo Link</th>
+              <th>Short Name</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let website of websites; let i = index">
+              <td>{{ website.name }}</td>
+              <td>{{ website.websiteUrl }}</td>
+              <td>{{ website.successUrl }}</td>
+              <td>{{ website.errorUrl }}</td>
+              <td>{{ website.logoUrl }}</td>
+              <td>{{ website.Abv }}</td>
+              <td>
+                <button class="btn btn-danger" (click)="deleteWebsite(i)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noWebsites>
+        <p>No websites added yet.</p>
+      </ng-template>
+    </div>
+
     <!-- Registration form -->
     <form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
       <div class="user-details">
@@ -86,6 +131,11 @@
       </div>
       <!-- Submit button -->
       <button type="submit" class="btn btn-primary" [disabled]="partnerForm.invalid">Register</button>
+      <p class="spasi mt-2">
+        <a href="javascript:void(0)" [routerLink]="['/landing']" routerLinkActive="router-link-active" class="maxwidth">
+          <strong>Back to Dashboard</strong>
+        </a>
+      </p>
     </form>
   </div>
 </div>

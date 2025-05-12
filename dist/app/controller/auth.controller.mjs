@@ -284,6 +284,68 @@ export class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+  async handleApiSettings(req, res) {
+    try {
+      // Extract token from request body
+      const { token } = req.body;
+
+      // Validate required input
+      if (!token) {
+        return res.status(400).json({ error: 'Missing required field: token' });
+      }
+
+      // Validate token format (assuming it's a SHA256 hash, 64 characters)
+      const tokenRegex = /^[a-f0-9]{64}$/i;
+      if (!tokenRegex.test(token)) {
+        return res.status(400).json({ error: 'Invalid token format' });
+      }
+
+      // Call service to confirm OTP login
+      const authResult = await this.authService.otpLoginConfirm(token);
+
+      // Check for errors in authResult
+      if (authResult.error) {
+        return res.status(400).json({ error: authResult.error });
+      }
+
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: 'OTP login validated successfully',
+        authResult
+      });
+    } catch (error) {
+      // Handle unexpected errors
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+  async handleTokenRevoke(req, res) {
+    try {
+      // Get index from req.user (tokenMiddleware) or req.api (apiKeyMiddleware)
+      const index = req.user?.index ?? req.api?.index;
+      if (index === undefined) {
+        return res.status(400).json({ error: 'User index not provided' });
+      }
+
+      // Initialize AuthService and call revokeApi
+      const result = await this.authService.revokeApi(index);
+
+      // Check for errors in result
+      if (result.error) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      // Return success response with updated user record
+      return res.status(200).json({
+        success: true,
+        user: result,
+      });
+    } catch (error) {
+      // Handle unexpected errors
+      console.error('Error in handleTokenRevoke:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
   async updatePassword(req, res) {
     console.log(req.body)
     try {

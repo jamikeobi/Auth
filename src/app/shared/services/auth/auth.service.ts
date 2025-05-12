@@ -93,6 +93,7 @@ export class AuthService {
     let headers = new HttpHeaders();
     const token = this._token.getValue();
     const apiKey = this._apiKey.getValue();
+    console.log(token);
 
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
@@ -105,6 +106,16 @@ export class AuthService {
     return headers;
   }
 
+  revokeApi(data: any): Observable<any> {
+    return this.http
+      .post(`${this.baseUrl}/revoke-api`, data, {
+        headers: this.createHeaders(),
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => this.handleError(error))
+      );
+  }
   register(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/sign-up`, data, {
