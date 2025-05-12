@@ -5,6 +5,7 @@
     <!-- API Token Section -->
     <div class="token-section">
       <p>Current API Token: <strong>{{ apiToken }}</strong></p>
+      <small>Note: You will have to login again after revoking exisiting token.</small>
       <div class="token-actions">
         <a href="javascript:void(0)" (click)="revokeToken()">Revoke Token</a>
         <a href="javascript:void(0)" (click)="copyToken()">Copy</a>

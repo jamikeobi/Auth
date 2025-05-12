@@ -2,6 +2,7 @@ import { AuthService } from 'src/app/shared/services/auth/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DeviceService } from 'src/app/shared/services/client/device.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-partner',
@@ -16,7 +17,8 @@ export class PartnerComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private ds: DeviceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router:Router
   ) {
     // Initialize form
     this.partnerForm = this.fb.group({
@@ -69,11 +71,17 @@ export class PartnerComponent implements OnInit {
     // Generate new token (in practice, call AuthService to revoke and get new token)
     // this.apiToken = this.generateToken();
     console.log('API generated:', this.apiToken);
+    this.ds.showSpinner();
     this.authService.revokeApi({api: this.apiToken}).subscribe(
       c=>{
+        this.ds.hideSpinner();
         this.authService.setApiKey(c.user.apikey);
         this.apiToken = c.user.apikey;
         console.log('New API generated:', this.apiToken);
+        this.authService.logout();
+        setTimeout(() =>this.router.navigate(['']).finally(()=>{
+          this.ds.oInfoNotification("API Revoked", "Please Login")
+        }), 500);
         // this.generateToken()
       },
       e=>console.log(e)
