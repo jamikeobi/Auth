@@ -22,12 +22,12 @@ body {
   border-radius: 5px;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
 }
-.container .title {
+.container-fluid .title {
   font-size: 25px;
   font-weight: 500;
   position: relative;
 }
-.container .title::before {
+.container-fluid .title::before {
   content: "";
   position: absolute;
   left: 0;
