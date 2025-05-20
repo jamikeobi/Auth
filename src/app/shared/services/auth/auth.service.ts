@@ -56,6 +56,13 @@ export class AuthService {
   public getParentUrl(): string | null {
     return this._parentUrl.getValue();
   }
+  sendAuthResult(result: { success: boolean; token?: string; user?: any; reason?: string }): void {
+    const parentUrl = this.getParentUrl() || '*';
+    window.parent.postMessage(
+      { type: 'AUTH_RESULT', result },
+      parentUrl
+    );
+  }
 
   // Public method to set apiKey
   public setApiKey(apiKey: string | null): void {

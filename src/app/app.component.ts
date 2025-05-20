@@ -111,6 +111,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
                   if (!isValidDomain) {
                     console.error('Forbidden: Parent URL domain not found in authorized APIs');
+                    this.authService.sendAuthResult({ success: false, reason: 'Unauthorized domain' });
                     this.deviceService.oErrorNotification('Forbidden', 'This domain is not authorized');
                     // Send message to parent to remove iframe
                     window.parent.postMessage(

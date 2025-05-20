@@ -43,7 +43,7 @@
       </div>
       <div class="modal-body">
         <ul class="list-group list-group-flush" *ngIf="sessionData?.user; else noSessionData">
-          <li class="list-group-item"><strong>Session ID:</strong> {{sessionData.user.id}}</li>
+          <li class="list-group-item"><strong>Session ID:</strong> {{sessionData.user.current}}</li>
           <li class="list-group-item"><strong>Email:</strong> {{sessionData.user.email}}</li>
           <li class="list-group-item"><strong>Login Type:</strong> {{loginType}}</li>
           <li class="list-group-item"><strong>Login Status:</strong> {{loginStatus}}</li>

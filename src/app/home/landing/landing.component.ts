@@ -206,6 +206,11 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
   checkRender(){
     if(this.authService.getParentUrl()){
+      this.authService.sendAuthResult({
+        success: true,
+        token: this.authService.getAuth(),
+        user: this.authService.getAuth()
+      });
       window.parent.postMessage(
         { type: 'loginSuccess', auth: {...this.authService.getAuth(), password:undefined} },
         `${this.authService.getParentUrl()}`

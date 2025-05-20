@@ -14,7 +14,7 @@
 
     <!-- Websites Table -->
     <div class="websites-table">
-      <h3>Websites</h3>
+      <h3>Registered Websites</h3>
       <div class="table-container">
         <table *ngIf="websites.length > 0; else noWebsites">
           <thead>
@@ -47,7 +47,7 @@
         <p>No websites added yet.</p>
       </ng-template>
     </div>
-
+    <h4>Register New Website</h4>
     <!-- Registration form -->
     <form [formGroup]="partnerForm" (ngSubmit)="onSubmit()">
       <div class="user-details">
