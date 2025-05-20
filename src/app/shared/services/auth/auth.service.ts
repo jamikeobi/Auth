@@ -26,6 +26,10 @@ export class AuthService {
   private _token: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
   public token$: Observable<string | null> = this._token.asObservable();
 
+  // BehaviorSubject for parentUrl
+  private _parentUrl: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  public parentUrl$: Observable<string | null> = this._parentUrl.asObservable();
+
   // Subjects for auth and user data
   private _auth: BehaviorSubject<any> = new BehaviorSubject(null);
   private _user: BehaviorSubject<any> = new BehaviorSubject(null);
@@ -40,6 +44,17 @@ export class AuthService {
   ) {
     // Initialize auth state and restore session
     this.restoreSession();
+  }
+
+  // Public method to set parentUrl
+  public setParentUrl(parentUrl: string | null): void {
+    this._parentUrl.next(parentUrl);
+    this.saveSession();
+  }
+
+  // Public method to get parentUrl
+  public getParentUrl(): string | null {
+    return this._parentUrl.getValue();
   }
 
   // Public method to set apiKey
@@ -217,20 +232,21 @@ export class AuthService {
         })
       );
   }
-  verifyAndFetchApi(api:string):Observable<any>{
+
+  verifyAndFetchApi(api: string): Observable<any> {
     let headers = new HttpHeaders();
     headers = headers.set('apiKey', api);
     return this.http
-    .get(`${this.baseUrl}/apiis`, {
-      headers,
-      params: new HttpParams(),
-    })
-    .pipe(
-      catchError(error => {
-        this.deviceService.oErrorNotification('Error', 'Failed to fetch API websites');
-        return this.handleError(error);
+      .get(`${this.baseUrl}/apiis`, {
+        headers,
+        params: new HttpParams(),
       })
-    );
+      .pipe(
+        catchError(error => {
+          this.deviceService.oErrorNotification('Error', 'Failed to fetch API websites');
+          return this.handleError(error);
+        })
+      );
   }
 
   /**
@@ -389,6 +405,7 @@ export class AuthService {
     this._loginType.next('traditional');
     this._apiKey.next(null);
     this._token.next(null);
+    this._parentUrl.next(null);
   }
 
   logout(): void {
@@ -403,6 +420,7 @@ export class AuthService {
         loginType: this._loginType.getValue(),
         token: this._token.getValue(),
         apiKey: this._apiKey.getValue(),
+        parentUrl: this._parentUrl.getValue(),
         codeToken: this._auth.getValue()?.codeToken
       };
       const encryptedSession = this.scriptService.encryptSha256(JSON.stringify(sessionData));
@@ -429,6 +447,7 @@ export class AuthService {
       this._loginType.next(sessionData.loginType || 'traditional');
       this._apiKey.next(sessionData.apiKey || null);
       this._token.next(sessionData.token || null);
+      this._parentUrl.next(sessionData.parentUrl || null);
       this._authState.next(!!sessionData.token);
     } catch (error) {
       console.error('Failed to decrypt and restore session:', error);

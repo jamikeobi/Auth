@@ -205,9 +205,12 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
   checkRender(){
-    window.parent.postMessage(
-      { type: 'loginSuccess', auth: {...this.authService.getAuth(), password:undefined} },
-      'http://localhost:5001'
-    );
+    if(this.authService.getParentUrl()){
+      window.parent.postMessage(
+        { type: 'loginSuccess', auth: {...this.authService.getAuth(), password:undefined} },
+        `${this.authService.getParentUrl()}`
+      );
+    }
+
   }
 }

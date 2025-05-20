@@ -44,7 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.parentUrl = window.parent.location.href;
       console.log('Parent URL (same-origin):', this.parentUrl);
       this.deviceService.oSuccessNotification('Success', 'Parent URL retrieved: ' + this.parentUrl);
-      // this.authService.setParentUrl(this.parentUrl);
+      this.authService.setParentUrl(this.parentUrl);
     } catch (error) {
       console.warn('Cannot access parent URL directly (cross-origin). Trying referrer and postMessage...', error);
       this.deviceService.oInfoNotification('Info', 'Awaiting parent URL from parent page');
@@ -57,7 +57,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.parentUrl = document.referrer;
         console.log('Parent URL (referrer):', this.parentUrl);
         this.deviceService.oSuccessNotification('Success', 'Parent URL from referrer: ' + this.parentUrl);
-        // this.authService.setParentUrl(this.parentUrl);
+        this.authService.setParentUrl(this.parentUrl);
       } catch (error) {
         console.warn('Invalid referrer URL:', document.referrer, error);
       }
@@ -126,7 +126,7 @@ export class AppComponent implements OnInit, OnDestroy {
                   // Valid domain found, proceed
                   console.log('Parent URL domain authorized');
                   this.deviceService.oSuccessNotification('Success', 'Parent domain authorized');
-                  // this.authService.setParentUrl(this.parentUrl);
+                  this.authService.setParentUrl(this.parentUrl);
                 } catch (error) {
                   console.error('Error validating parent URL:', error);
                   this.deviceService.oErrorNotification('Error', 'Failed to validate parent domain');
