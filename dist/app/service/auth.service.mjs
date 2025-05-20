@@ -19,9 +19,13 @@ const PUBLIC_SERVER_URL = process.env.PUBLIC_SERVER_URL;
  * save(data);
  * getBy(field, value);
  * findBy(field, value);
- * delete(code)
- * update(code, data)
- * revokeApi(index)
+ * delete(code);
+ * update(code, data);
+ * revokeApi(index);
+ * allApi(user);
+ * saveApi(user, data);
+ * updateApi(user, userIndex, newData);
+ * deleteApi(user, userIndex);
  */
 export class AuthService {
   db = new JsonDB(new Config(__dirname + DBPATH, true, true, "/"));
@@ -37,6 +41,170 @@ export class AuthService {
   auths = async () => {
     return await this.db.getData("/records");
   };
+
+  /**
+   * Fetch all API records for a user
+   * @param user is the user object
+   * @returns Array of API objects
+   */
+  async allApi(user) {
+    try {
+      if (!user || !user.api) {
+        return [];
+      }
+      return user.api;
+    } catch (error) {
+      console.error('Error fetching API records:', error);
+      return { error: 'Failed to fetch API records', details: error.message };
+    }
+  }
+
+  /**
+   * Save a new API record for a user
+   * @param user is the user object
+   * @param data is the new API data from partnerForm
+   * @returns Object - Updated user record excluding password
+   */
+  async saveApi(user, data) {
+    try {
+      if (!user) {
+        return { error: 'User not provided' };
+      }
+
+      // Validate required fields
+      const requiredFields = ['name', 'websiteUrl', 'successUrl', 'errorUrl', 'logoUrl', 'Abv'];
+      for (const field of requiredFields) {
+        if (!data[field]) {
+          return { error: `Missing required field: ${field}` };
+        }
+      }
+
+      // Ensure numeric fields are initialized correctly
+      const apiData = {
+        name: data.name,
+        websiteUrl: data.websiteUrl,
+        successUrl: data.successUrl,
+        errorUrl: data.errorUrl,
+        logoUrl: data.logoUrl,
+        Abv: data.Abv,
+        totalLoginAttempt: data.totalLoginAttempt || 0,
+        totalLoginSuccess: data.totalLoginSuccess || 0,
+        totalLoginFailure: data.totalLoginFailure || 0,
+        totalNewly: data.totalNewly || 0,
+        created_at: new Date()
+      };
+
+      // Initialize api array if it doesn't exist
+      user.api = user.api || [];
+      user.api.push(apiData);
+
+      // Update user record
+      const index = await this.getByIndex("email", user.email);
+      if (index === -1) {
+        return { error: 'User not found in database' };
+      }
+
+      await this.update({ ...user, id: undefined }, index);
+
+      // Return updated user excluding password
+      return { ...user, password: undefined };
+    } catch (error) {
+      console.error('Error saving API record:', error);
+      return { error: 'Failed to save API record', details: error.message };
+    }
+  }
+
+  /**
+   * Update an existing API record for a user
+   * @param user is the user object
+   * @param userIndex is the index of the API record in the user's api array
+   * @param newData is the updated API data from partnerForm
+   * @returns Object - Updated user record excluding password
+   */
+  async updateApi(user, userIndex, newData) {
+    try {
+      if (!user) {
+        return { error: 'User not provided' };
+      }
+
+      if (!user.api || !Array.isArray(user.api) || userIndex < 0 || userIndex >= user.api.length) {
+        return { error: 'Invalid API record index' };
+      }
+
+      // Validate required fields
+      const requiredFields = ['name', 'websiteUrl', 'successUrl', 'errorUrl', 'logoUrl', 'Abv'];
+      for (const field of requiredFields) {
+        if (!newData[field]) {
+          return { error: `Missing required field: ${field}` };
+        }
+      }
+
+      // Update API record
+      user.api[userIndex] = {
+        name: newData.name,
+        websiteUrl: newData.websiteUrl,
+        successUrl: newData.successUrl,
+        errorUrl: newData.errorUrl,
+        logoUrl: newData.logoUrl,
+        Abv: newData.Abv,
+        totalLoginAttempt: newData.totalLoginAttempt || user.api[userIndex].totalLoginAttempt || 0,
+        totalLoginSuccess: newData.totalLoginSuccess || user.api[userIndex].totalLoginSuccess || 0,
+        totalLoginFailure: newData.totalLoginFailure || user.api[userIndex].totalLoginFailure || 0,
+        totalNewly: newData.totalNewly || user.api[userIndex].totalNewly || 0,
+        created_at: user.api[userIndex].created_at,
+        updated_at: new Date()
+      };
+
+      // Update user record
+      const index = await this.getByIndex("email", user.email);
+      if (index === -1) {
+        return { error: 'User not found in database' };
+      }
+
+      await this.update({ ...user, id: undefined }, index);
+
+      // Return updated user excluding password
+      return { ...user, password: undefined };
+    } catch (error) {
+      console.error('Error updating API record:', error);
+      return { error: 'Failed to update API record', details: error.message };
+    }
+  }
+
+  /**
+   * Delete an API record for a user
+   * @param user is the user object
+   * @param userIndex is the index of the API record in the user's api array
+   * @returns Object - Updated user record excluding password
+   */
+  async deleteApi(user, userIndex) {
+    try {
+      if (!user) {
+        return { error: 'User not provided' };
+      }
+
+      if (!user.api || !Array.isArray(user.api) || userIndex < 0 || userIndex >= user.api.length) {
+        return { error: 'Invalid API record index' };
+      }
+
+      // Remove API record
+      user.api.splice(userIndex, 1);
+
+      // Update user record
+      const index = await this.getByIndex("email", user.email);
+      if (index === -1) {
+        return { error: 'User not found in database' };
+      }
+
+      await this.update({ ...user, id: undefined }, index);
+
+      // Return updated user excluding password
+      return { ...user, password: undefined };
+    } catch (error) {
+      console.error('Error deleting API record:', error);
+      return { error: 'Failed to delete API record', details: error.message };
+    }
+  }
 
   /**
    * Save new event to table
@@ -57,6 +225,7 @@ export class AuthService {
     // Set the created and updated at properties
     data.created_at = now;
     data.session = [];
+    data.api = []; // Initialize api array
     data.updated_at = undefined;
     // Set the active property
     data.status = 0;
@@ -104,7 +273,6 @@ export class AuthService {
       // Return user record excluding password
       return { ...user, password: undefined };
     } catch (error) {
-      // Handle unexpected errors
       console.error('Error revoking API key:', error);
       return { error: 'Failed to revoke API key', details: error.message };
     }
@@ -460,7 +628,8 @@ export class AuthService {
         email: data.email,
         password: this.encryptService.encryptSha256(data.password),
         isFirstTimeUser: data.isFirstTimeUser !== undefined ? data.isFirstTimeUser : true,
-        created_at: now
+        created_at: now,
+        api: [] // Initialize api array
       };
     } else {
       // Fetch existing user

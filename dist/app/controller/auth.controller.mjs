@@ -191,6 +191,7 @@ export class AuthController {
       });
     }
   }
+
   async whois(req, res) {
     // Extract token from Authorization header (e.g., "Bearer <token>")
     const authHeader = req.headers["authorization"];
@@ -218,6 +219,7 @@ export class AuthController {
       errors: "Token Required",
     });
   }
+
   async otpRequest(req, res) {
     try {
       // Extract email from request body
@@ -284,41 +286,142 @@ export class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
-  async handleApiSettings(req, res) {
+
+  /**
+   * Retrieves all API websites for the authenticated user.
+   *
+   * This asynchronous function fetches the user's API records using the user index
+   * from req.userIndex and returns the api array.
+   *
+   * @param {Object} req - The request object containing user info in req.user and req.userIndex.
+   * @param {Object} res - The response object used to send back the HTTP response.
+   *
+   * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+   */
+  async getApiWebsites(req, res) {
     try {
-      // Extract token from request body
-      const { token } = req.body;
-
-      // Validate required input
-      if (!token) {
-        return res.status(400).json({ error: 'Missing required field: token' });
+      // Fetch user by index
+      const user = req.user;
+      // Get all API records
+      const apis = await this.authService.allApi(user);
+      if (apis.error) {
+        return res.status(400).json({ error: apis.error });
       }
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        apis
+      });
+    } catch (error) {
+      console.error('Error in getApiWebsites:', error);
+      return res.status(500).json({ message: 'Internal server error',error: error });
+    }
+  }
 
-      // Validate token format (assuming it's a SHA256 hash, 64 characters)
-      const tokenRegex = /^[a-f0-9]{64}$/i;
-      if (!tokenRegex.test(token)) {
-        return res.status(400).json({ error: 'Invalid token format' });
+  /**
+   * Saves a new API website for the authenticated user.
+   *
+   * This asynchronous function adds a new API record to the user's api array
+   * using data from req.body and the user index from req.userIndex.
+   *
+   * @param {Object} req - The request object containing user info in req.user, req.userIndex, and API data in req.body.
+   * @param {Object} res - The response object used to send back the HTTP response.
+   *
+   * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+   */
+  async saveApiWebsite(req, res) {
+    try {
+      // Validate request body
+      const requiredFields = ['name', 'websiteUrl', 'successUrl', 'errorUrl', 'logoUrl', 'Abv'];
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res.status(400).json({ error: `Missing required field: ${field}` });
+        }
       }
-
-      // Call service to confirm OTP login
-      const authResult = await this.authService.otpLoginConfirm(token);
-
-      // Check for errors in authResult
-      if (authResult.error) {
-        return res.status(400).json({ error: authResult.error });
+      // Save new API record
+      const result = await this.authService.saveApi(req.user, req.body);
+      if (result.error) {
+        return res.status(400).json({ error: result.error });
       }
 
       // Return success response
       return res.status(200).json({
         success: true,
-        message: 'OTP login validated successfully',
-        authResult
+        user: result
       });
     } catch (error) {
-      // Handle unexpected errors
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error('Error in saveApiWebsite:', error);
+      return res.status(500).json({error, message: 'Internal server error' });
     }
   }
+
+  /**
+   * Updates an existing API website for the authenticated user.
+   *
+   * This asynchronous function updates an API record at the specified index in the user's api array
+   * using data from req.body and the user index from req.userIndex.
+   *
+   * @param {Object} req - The request object containing user info in req.user, req.userIndex, API index in req.params.index, and updated data in req.body.
+   * @param {Object} res - The response object used to send back the HTTP response.
+   *
+   * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+   */
+  async updateApiWebsite(req, res) {
+    try {
+
+      // Validate request body
+      const requiredFields = ['name', 'websiteUrl', 'successUrl', 'errorUrl', 'logoUrl', 'Abv'];
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res.status(400).json({ error: `Missing required field: ${field}` });
+        }
+      }
+      // Update API record
+      const result = await this.authService.updateApi(req.user, req.userIndex, req.body);
+      if (result.error) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        user: result
+      });
+    } catch (error) {
+      console.error('Error in updateApiWebsite:', error);
+      return res.status(500).json({error, message: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Deletes an API website for the authenticated user.
+   *
+   * This asynchronous function removes an API record at the specified index from the user's api array
+   * using the user index from req.userIndex.
+   *
+   * @param {Object} req - The request object containing user info in req.user, req.userIndex, and API index in req.params.index.
+   * @param {Object} res - The response object used to send back the HTTP response.
+   *
+   * @returns {Promise<void>} - A promise that resolves when the response has been sent.
+   */
+  async deleteApiWebsite(req, res) {
+    try {
+      // Delete API record
+      const result = await this.authService.deleteApi(req.user, req.userIndex);
+      if (result.error) {
+        return res.status(400).json({ error: result.error });
+      }
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        user: result
+      });
+    } catch (error) {
+      console.error('Error in deleteApiWebsite:', error);
+      return res.status(500).json({ error, message: 'Internal server error' });
+    }
+  }
+
   async handleTokenRevoke(req, res) {
     try {
       // Get index from req.user (tokenMiddleware) or req.api (apiKeyMiddleware)
@@ -341,11 +444,11 @@ export class AuthController {
         user: result,
       });
     } catch (error) {
-      // Handle unexpected errors
       console.error('Error in handleTokenRevoke:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
-  };
+  }
+
   async updatePassword(req, res) {
     console.log(req.body)
     try {
@@ -369,6 +472,7 @@ export class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
   /**
    * Validates the provided request body for required fields.
    *

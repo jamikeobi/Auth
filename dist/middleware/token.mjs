@@ -32,11 +32,8 @@ export default async function tokenMiddleware(req, res, next) {
       }
 
       // Token matches 'current', attach minimal user data with index
-      req.user = {
-        id: user.id,
-        email: user.email,
-        index,
-      };
+      req.user = user;
+      req.userIndex = index;
       return next(); // Proceed to next middleware/controller
     }
 

@@ -116,6 +116,7 @@ export class AuthService {
         catchError(error => this.handleError(error))
       );
   }
+
   register(data: any): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/sign-up`, data, {
@@ -191,6 +192,116 @@ export class AuthService {
           this._authState.next(true);
           this._loginType.next('traditional');
           this.saveSession();
+        })
+      );
+  }
+
+  /**
+   * Retrieves all API websites for the authenticated user.
+   *
+   * Sends a GET request to /api-websites to fetch the user's API records.
+   *
+   * @param data - Not used, included for consistency with other methods.
+   * @returns Observable with the response containing the apis array.
+   */
+  getApiWebsites(data: any): Observable<any> {
+    return this.http
+      .get(`${this.baseUrl}/api-websites`, {
+        headers: this.createHeaders(),
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => {
+          this.deviceService.oErrorNotification('Error', 'Failed to fetch API websites');
+          return this.handleError(error);
+        })
+      );
+  }
+
+  /**
+   * Saves a new API website for the authenticated user.
+   *
+   * Sends a POST request to /api-websites with the API data to create a new record.
+   *
+   * @param data - Object containing API details (name, websiteUrl, successUrl, errorUrl, logoUrl, Abv).
+   * @returns Observable with the response containing the updated user record.
+   */
+  saveApiWebsite(data: any): Observable<any> {
+    return this.http
+      .post(`${this.baseUrl}/api-websites`, data, {
+        headers: this.createHeaders(),
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => {
+          this.deviceService.oErrorNotification('Error', 'Failed to save API website');
+          return this.handleError(error);
+        }),
+        tap((res: any) => {
+          if (res.success && res.user) {
+            this._user.next(res.user);
+            this._auth.next(res.user);
+            this.saveSession();
+          }
+        })
+      );
+  }
+
+  /**
+   * Updates an existing API website for the authenticated user.
+   *
+   * Sends a PATCH request to /api-websites with the index and updated API data.
+   *
+   * @param data - Object containing the index and updated API details (index, name, websiteUrl, etc.).
+   * @returns Observable with the response containing the updated user record.
+   */
+  updateApiWebsite(data: any): Observable<any> {
+    return this.http
+      .patch(`${this.baseUrl}/api-websites`, data, {
+        headers: this.createHeaders(),
+        params: new HttpParams(),
+      })
+      .pipe(
+        catchError(error => {
+          this.deviceService.oErrorNotification('Error', 'Failed to update API website');
+          return this.handleError(error);
+        }),
+        tap((res: any) => {
+          if (res.success && res.user) {
+            this._user.next(res.user);
+            this._auth.next(res.user);
+            this.saveSession();
+          }
+        })
+      );
+  }
+
+  /**
+   * Deletes an API website for the authenticated user.
+   *
+   * Sends a DELETE request to /api-websites with the index of the API record to delete.
+   *
+   * @param data - Object containing the index of the API record to delete.
+   * @returns Observable with the response containing the updated user record.
+   */
+  deleteApiWebsite(data: any): Observable<any> {
+    return this.http
+      .delete(`${this.baseUrl}/api-websites`, {
+        headers: this.createHeaders(),
+        params: new HttpParams(),
+        body: data
+      })
+      .pipe(
+        catchError(error => {
+          this.deviceService.oErrorNotification('Error', 'Failed to delete API website');
+          return this.handleError(error);
+        }),
+        tap((res: any) => {
+          if (res.success && res.user) {
+            this._user.next(res.user);
+            this._auth.next(res.user);
+            this.saveSession();
+          }
         })
       );
   }

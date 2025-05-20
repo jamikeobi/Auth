@@ -52,8 +52,14 @@ app.post("/otp-request", (req, res) => authController.otpRequest(req, res));
 app.post("/otp-sign-in", (req, res) => authController.otpLogin(req, res));
 app.get("/whois",[tokenMiddleware], (req, res) => authController.whois(req, res));
 app.post("/update-password",[tokenMiddleware], (req, res) => authController.updatePassword(req, res));
-app.post("/api-settings", [tokenMiddleware, apiKeyMiddleware], (req, res) => authController.handleApiSettings(req, res));
+
+//API Configurations
 app.post("/revoke-api",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.handleTokenRevoke(req, res));
+
+app.get("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.getApiWebsites(req, res));
+app.post("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.saveApiWebsite(req, res));
+app.patch("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.updateApiWebsite(req, res));
+app.delete("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.deleteApiWebsite(req, res));
 
 /* end of backend routes */
 app.use(function (req, res, next) {

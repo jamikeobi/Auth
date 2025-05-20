@@ -18,7 +18,7 @@ export class PartnerComponent implements OnInit {
     private fb: FormBuilder,
     private ds: DeviceService,
     private authService: AuthService,
-    private router:Router
+    private router: Router
   ) {
     // Initialize form
     this.partnerForm = this.fb.group({
@@ -30,19 +30,54 @@ export class PartnerComponent implements OnInit {
       Abv: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(10)]]
     });
 
-    // Initialize API token (in practice, fetch from AuthService)
-    this.apiToken = this.generateToken();
+    // Initialize API token from AuthService
+    const u = this.authService.getAuthData();
+    this.apiToken = u?.auth?.apikey || '';
   }
 
   ngOnInit(): void {
-    // In a real app, fetch websites and token from a service
-    // Example: this.authService.getWebsites().subscribe(data => this.websites = data);
+    // Set token and apiKey from session
     const u = this.authService.getAuthData();
-    console.log(u);
-    this.authService.setToken(u.user.current);
-    this.authService.setApiKey(u.user.apikey);
+    if (u?.user?.current && u?.user?.apikey) {
+      this.authService.setToken(u.user.current);
+      this.authService.setApiKey(u.user.apikey);
+      this.apiToken = u.user.apikey;
+    } else {
+      this.ds.oErrorNotification('Error', 'Session data missing. Please login again.');
+      this.router.navigate(['']);
+    }
+
+    // Load websites
+    this.loadWebsites();
   }
 
+  /**
+   * Loads API websites from the backend using AuthService.
+   */
+  private loadWebsites(): void {
+    this.ds.showSpinner();
+    this.authService.getApiWebsites({}).subscribe({
+      next: (res) => {
+        console.log(res);
+        this.ds.hideSpinner();
+        if (res.success) {
+          this.websites = res.apis || [];
+          this.ds.oSuccessNotification('Success', 'API websites loaded successfully');
+        } else {
+          this.ds.oErrorNotification('Error', 'Failed to load API websites');
+        }
+      },
+      error: (err) => {
+        this.ds.hideSpinner();
+        this.ds.oErrorNotification('Error', 'Failed to load API websites: ' + (err.error?.error || 'Unknown error'));
+        console.error('Error loading websites:', err);
+      }
+    });
+  }
+
+  /**
+   * Handles form submission to save a new API website.
+   */
   onSubmit(): void {
     if (this.partnerForm.valid) {
       const formData = {
@@ -57,59 +92,95 @@ export class PartnerComponent implements OnInit {
         totalLoginFailure: 0,
         totalNewly: 0
       };
-      // Add to websites array (in practice, send to backend)
-      this.websites.push(formData);
-      console.log('API-ready data:', formData);
-      this.partnerForm.reset(); // Reset form after submission
+
+      this.ds.showSpinner();
+      this.authService.saveApiWebsite(formData).subscribe({
+        next: (res) => {
+          console.log(res);
+          this.ds.hideSpinner();
+          if (res.success) {
+            this.loadWebsites();
+            this.partnerForm.reset();
+            this.ds.oSuccessNotification('Success', 'API website saved successfully');
+          } else {
+            this.ds.oErrorNotification('Error', 'Failed to save API website');
+          }
+        },
+        error: (err) => {
+          this.ds.hideSpinner();
+          this.ds.oErrorNotification('Error', 'Failed to save API website: ' + (err.error?.error || 'Unknown error'));
+          console.error('Error saving website:', err);
+        }
+      });
     } else {
       this.partnerForm.markAllAsTouched();
+      this.ds.oErrorNotification('Error', 'Please fill all required fields correctly');
       console.log('Form is invalid');
     }
   }
 
+  /**
+   * Revokes the current API token and logs out.
+   */
   revokeToken(): void {
-    // Generate new token (in practice, call AuthService to revoke and get new token)
-    // this.apiToken = this.generateToken();
-    console.log('API generated:', this.apiToken);
     this.ds.showSpinner();
-    this.authService.revokeApi({api: this.apiToken}).subscribe(
-      c=>{
+    this.authService.revokeApi({ api: this.apiToken }).subscribe({
+      next: (res) => {
         this.ds.hideSpinner();
-        this.authService.setApiKey(c.user.apikey);
-        this.apiToken = c.user.apikey;
-        console.log('New API generated:', this.apiToken);
-        this.authService.logout();
-        setTimeout(() =>this.router.navigate(['']).finally(()=>{
-          this.ds.oInfoNotification("API Revoked", "Please Login")
-        }), 500);
-        // this.generateToken()
+        if (res.user?.apikey) {
+          this.authService.setApiKey(res.user.apikey);
+          this.apiToken = res.user.apikey;
+          this.authService.logout();
+          this.router.navigate(['']).finally(() => {
+            this.ds.oInfoNotification('API Revoked', 'Please login again');
+          });
+        } else {
+          this.ds.oErrorNotification('Error', 'Failed to revoke API token');
+        }
       },
-      e=>console.log(e)
-    )
+      error: (err) => {
+        this.ds.hideSpinner();
+        this.ds.oErrorNotification('Error', 'Failed to revoke API token: ' + (err.error?.error || 'Unknown error'));
+        console.error('Error revoking token:', err);
+      }
+    });
   }
 
+  /**
+   * Copies the API token to the clipboard.
+   */
   copyToken(): void {
-    // Copy token to clipboard
     navigator.clipboard.writeText(this.apiToken).then(() => {
-      console.log('Token copied to clipboard');
-      alert('API Token copied to clipboard!');
+      this.ds.oSuccessNotification('Success', 'API token copied to clipboard');
     }).catch(err => {
+      this.ds.oErrorNotification('Error', 'Failed to copy token');
       console.error('Failed to copy token:', err);
     });
   }
 
+  /**
+   * Deletes an API website by index.
+   *
+   * @param index - The index of the website to delete.
+   */
   deleteWebsite(index: number): void {
-    // Remove website from array (in practice, call backend to delete)
-    this.websites.splice(index, 1);
-    console.log('Website deleted at index:', index);
-  }
-
-  private generateToken(): string {
-    // Generate a simple random token (UUID-like for demo)
-    const u = this.authService.getAuthData();
-    console.log(u);
-    this.authService.setToken(u.user.current);
-    this.authService.setApiKey(u.user.apikey);
-    return u.auth.apikey;
+    this.ds.showSpinner();
+    this.authService.deleteApiWebsite({ index }).subscribe({
+      next: (res) => {
+        console.log(res);
+        this.ds.hideSpinner();
+        if (res.success) {
+          this.loadWebsites();
+          this.ds.oSuccessNotification('Success', 'API website deleted successfully');
+        } else {
+          this.ds.oErrorNotification('Error', 'Failed to delete API website');
+        }
+      },
+      error: (err) => {
+        this.ds.hideSpinner();
+        this.ds.oErrorNotification('Error', 'Failed to delete API website: ' + (err.error?.error || 'Unknown error'));
+        console.error('Error deleting website:', err);
+      }
+    });
   }
 }
