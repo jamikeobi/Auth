@@ -22,7 +22,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private _mobileQueryListener: () => void;
   private _messageListener: (event: MessageEvent) => void;
-
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private media: MediaMatcher,
@@ -170,9 +169,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Handle incoming postMessage from parent
   private handleMessage(event: MessageEvent): void {
+
     // Validate message structure
     if (!event.data || typeof event.data !== 'object' || event.data.type !== 'PARENT_URL') {
-      console.warn('Invalid message format:', event.data);
+      if (event.data.source != 'react-devtools-content-script') {
+        console.warn('Invalid message format:', event.data);
+      }
       return;
     }
 
