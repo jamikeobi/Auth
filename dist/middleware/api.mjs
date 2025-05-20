@@ -37,6 +37,7 @@ export default async function apiKeyMiddleware(req, res, next) {
       email: user.email,
       id: user.id,
       index,
+      user
     };
 
     // Proceed to the next middleware or route handler

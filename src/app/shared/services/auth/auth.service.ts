@@ -217,6 +217,21 @@ export class AuthService {
         })
       );
   }
+  verifyAndFetchApi(api:string):Observable<any>{
+    let headers = new HttpHeaders();
+    headers = headers.set('apiKey', api);
+    return this.http
+    .get(`${this.baseUrl}/apiis`, {
+      headers,
+      params: new HttpParams(),
+    })
+    .pipe(
+      catchError(error => {
+        this.deviceService.oErrorNotification('Error', 'Failed to fetch API websites');
+        return this.handleError(error);
+      })
+    );
+  }
 
   /**
    * Saves a new API website for the authenticated user.

@@ -286,6 +286,26 @@ export class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+  async apiis(req, res) {
+    try {
+      // Check if req.api and req.api.user exist
+      if (!req.api || !req.api.user) {
+        return res.status(400).json({ error: 'User not found' });
+      }
+
+      // Get the user's API array, default to empty array if undefined
+      const apis = req.api.user.api || [];
+
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        apis
+      });
+    } catch (error) {
+      console.error('Error in apiis:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 
   /**
    * Retrieves all API websites for the authenticated user.

@@ -39,9 +39,19 @@ export class AppComponent implements OnInit, OnDestroy {
       const routePath = event.urlAfterRedirects;
       if (routePath.startsWith('/external/')) {
         const apiValue = this.getApiValue(routePath);
-        console.log('Route:', routePath);
-        console.log('API Value:', apiValue || 'No API parameter provided');
+        console.log('Route: ', routePath);
+        console.log('API Value: ', apiValue || 'No API parameter provided');
         this.authService.setApiKey(apiValue);
+        if(apiValue){
+          this.authService.verifyAndFetchApi(apiValue).subscribe({
+            next: (res: any) => {
+              console.log(res);
+            },
+            error: (e:any) => {
+              console.log(e);
+            }
+          });
+        }
       }
     });
   }

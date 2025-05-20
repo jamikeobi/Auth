@@ -54,6 +54,8 @@ app.get("/whois",[tokenMiddleware], (req, res) => authController.whois(req, res)
 app.post("/update-password",[tokenMiddleware], (req, res) => authController.updatePassword(req, res));
 
 //API Configurations
+app.get("/apiis",[apiKeyMiddleware], (req, res) => authController.apiis(req, res));
+
 app.post("/revoke-api",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.handleTokenRevoke(req, res));
 
 app.get("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.getApiWebsites(req, res));
