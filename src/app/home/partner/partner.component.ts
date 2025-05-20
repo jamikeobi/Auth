@@ -23,11 +23,20 @@ export class PartnerComponent implements OnInit {
     // Initialize form
     this.partnerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
-      websiteUrl: ['', [Validators.required, Validators.pattern(/^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/)]],
-      successUrl: ['', [Validators.required, Validators.pattern(/^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/)]],
-      errorUrl: ['', [Validators.required, Validators.pattern(/^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/)]],
-      logoUrl: ['', [Validators.required, Validators.pattern(/^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?\.(png|jpg|jpeg|gif)$/i)]],
-      Abv: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(10)]]
+      websiteUrl: ['', [
+        Validators.required,
+        Validators.pattern(/^(?:(?:https?:\/\/)?(?:localhost(?::\d+)?|[\w-]+\.[\w-]+(?:\.[\w-]+)*)(?:\/[\w- ./?%&=]*)?)?$/)
+      ]],
+      successUrl: ['', [
+        Validators.required,
+        Validators.pattern(/^(?:(?:https?:\/\/)?(?:localhost(?::\d+)?|[\w-]+\.[\w-]+(?:\.[\w-]+)*)(?:\/[\w- ./?%&=]*)?)?$/)
+      ]],
+      errorUrl: ['', [
+        Validators.required,
+        Validators.pattern(/^(?:(?:https?:\/\/)?(?:localhost(?::\d+)?|[\w-]+\.[\w-]+(?:\.[\w-]+)*)(?:\/[\w- ./?%&=]*)?)?$/)
+      ]],
+      logoUrl: ['', [Validators.required]],Abv: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(10)]]
+      
     });
 
     // Initialize API token from AuthService
