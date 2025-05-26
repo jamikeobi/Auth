@@ -1,4 +1,4 @@
-const ALLOWED_DOMAINS = ['https://localhost:4200', 'http://localhost:5000'];
+const ALLOWED_DOMAINS = [ 'http://localhost:5000'];
 
 export default async function authMiddleware(req, res, next) {
   let origin = req.get('origin');
