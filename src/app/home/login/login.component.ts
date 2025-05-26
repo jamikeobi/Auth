@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/shared/services/auth/auth.service';
 import { DeviceService } from 'src/app/shared/services/client/device.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -70,7 +71,7 @@ export class LoginComponent implements OnInit {
   }
 
   isAuthEmail(email: string = this.loginForm.get('email')?.value): boolean {
-    return email.toLowerCase().endsWith('@auth.com');
+    return email.toLowerCase().endsWith(environment.domain);
   }
 
   async submit() {
@@ -102,7 +103,7 @@ export class LoginComponent implements OnInit {
     let loginPassword: string;
 
     if (this.isAuthEmail()) {
-      // Generate password for @auth.com emails
+      // Generate password for env emails
       loginPassword = `${formValue.word}_${formValue.position}`;
       console.log('Generated Password:', loginPassword);
     } else {

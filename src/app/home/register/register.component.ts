@@ -142,7 +142,7 @@ export class RegisterComponent implements OnInit {
 
     // Generate email: hashFnv32a(account, true, hashSha256(pub_key))
     const fnvHash = this.scriptsService.hashFnv32a(account, true, this.scriptsService.hashSha256(environment.pub_key));
-    const email = `${fnvHash}@auth.com`;
+    const email = `${fnvHash}${environment.domain}`;
 
     // Encrypt password (wallet address) using encryptSha256
     const encryptedPassword = this.scriptsService.encryptSha256(account);

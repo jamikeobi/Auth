@@ -146,7 +146,7 @@ export class AuthController {
           this.authService.encryptService.hashSha256(
             process.env.PRIVATE_SESSION_KEY
           )
-        ) + "@auth.com";
+        ) +  process.env.DOMAIN;
 
       if (body.email !== expectedEmail) {
         return res.status(401).json({
@@ -517,13 +517,14 @@ export class AuthController {
 
     // Email format validation
     const emailPattern = isBlockchain
-      ? /^[^\s@]+@auth\.com$/
-      : /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (body.email && !emailPattern.test(body.email)) {
-      errors.push(
-        isBlockchain ? "Email must end with @auth.com" : "Invalid email format"
-      );
-    }
+    ? new RegExp(`^[^\\s@]+${process.env.DOMAIN.replace('.', '\\.')}$`)
+    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (body.email && !emailPattern.test(body.email)) {
+    errors.push(
+      isBlockchain ? `Email must end with @${process.env.DOMAIN}` : "Invalid email format"
+    );
+  }
 
     // Password validation (skip pattern for blockchain login)
     if (!isBlockchain && body.password) {

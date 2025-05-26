@@ -7,6 +7,7 @@ import { ScriptsService } from 'src/app/shared/services/client/scripts.service';
 import { Web3Service } from 'src/app/shared/services/crypto/web3.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DeviceService } from 'src/app/shared/services/client/device.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-landing',
@@ -146,7 +147,7 @@ export class LandingComponent implements OnInit, OnDestroy {
         return;
       }
       const fnvHash = this.scriptsService.hashFnv32a(this.currentHash, true, this.scriptsService.hashSha256(walletAddress));
-      this.generatedEmail = `${fnvHash}@auth.com`;
+      this.generatedEmail = `${fnvHash}${environment.domain}`;
       console.log('Generated Email:', this.generatedEmail);
     }
   }

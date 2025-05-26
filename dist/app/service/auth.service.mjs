@@ -589,10 +589,10 @@ export class AuthService {
       return { error: 'Missing required fields: email and password' };
     }
 
-    // Validate email format (must end with @auth.com)
-    const emailRegex = /^[^\s@]+@auth\.com$/;
+    // Validate email format (must end with @${process.env.DOMAIN})
+    const emailRegex = new RegExp(`^[^\\s@]+${process.env.DOMAIN.replace('.', '\\.')}$`);
     if (!emailRegex.test(data.email)) {
-      return { error: 'Invalid email format' };
+      return { error: `Email must end with @${process.env.DOMAIN}` };
     }
 
     // Validate password format (must be a valid Ethereum address)

@@ -8,6 +8,7 @@ export const environment = {
   emailApi: 'http://localhost:5000',
   uploadApi: 'http://localhost:5000',
   appName: 'Auth',
+  domain: '@auth.com',
   teegramToken:'',
   appDomain: 'https://localhost:5000',
   pub_key: "7f2G4iAwNUrJcGe05gNUrJBYZjsGkcAY0LWp9ck0826oA0826wNUrJcAf2G2G4iAnrY0LWp9n"
