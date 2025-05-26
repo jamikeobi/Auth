@@ -116,6 +116,7 @@ export class AuthService {
     const token = this._token.getValue();
     const apiKey = this._apiKey.getValue();
     console.log(token);
+    console.log(apiKey);
 
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
@@ -123,7 +124,6 @@ export class AuthService {
     if (apiKey) {
       headers = headers.set('apiKey', apiKey);
     }
-    console.log(headers);
 
     return headers;
   }

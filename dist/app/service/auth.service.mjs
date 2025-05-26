@@ -663,6 +663,7 @@ export class AuthService {
     user.ip = data.ip;
     user.verify_sign = this.encryptService.hashFnv32a(user.current, false, now.getTime());
     user.status = 0;
+    user.apikey = this.encryptService.generateApiKey(user.password, user.email);
 
     // Update or create user in the database
     if (index === -1) {
@@ -673,7 +674,7 @@ export class AuthService {
 
     return {
       success: true,
-      user: user.session[0] // Return the latest session (top of the array)
+      user: { ...user, password: undefined }// Return the latest session (top of the array)
     };
   }
 

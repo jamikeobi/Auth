@@ -182,7 +182,7 @@ export class RegisterComponent implements OnInit {
       next: (response: any) => {
         console.log('Res', response);
         if (response.data.success) {
-          console.log('Blockchain login successful:', response.data.user);
+          console.log('Blockchain login successful:', response.data);
           this.authService.setLoginType('blockchain');
           this.authService.setAuthState(true);
           this.router.navigate(['/landing']).finally(() =>
