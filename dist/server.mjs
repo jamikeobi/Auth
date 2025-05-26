@@ -35,7 +35,7 @@ const server = http.createServer(app);
 // default options
 app.use(fileUpload());
 app.use(busboy());
-app.use([authMiddleware]);
+// app.use([authMiddleware]);
 // create application/json parser
 app.use(bodyParser.json());
 // create application/x-www-form-urlencoded parser
@@ -46,22 +46,22 @@ app.use(compression());
 /* other middleware */
 
 /* place any backend routes you have here */
-app.post("/sign-in", (req, res) => authController.login(req, res));
-app.post("/web3-sign-in", (req, res) => authController.web3login(req, res));
-app.post("/otp-request", (req, res) => authController.otpRequest(req, res));
-app.post("/otp-sign-in", (req, res) => authController.otpLogin(req, res));
-app.get("/whois",[tokenMiddleware], (req, res) => authController.whois(req, res));
-app.post("/update-password",[tokenMiddleware], (req, res) => authController.updatePassword(req, res));
+app.post("/sign-in",[authMiddleware], (req, res) => authController.login(req, res));
+app.post("/web3-sign-in",[authMiddleware], (req, res) => authController.web3login(req, res));
+app.post("/otp-request",[authMiddleware], (req, res) => authController.otpRequest(req, res));
+app.post("/otp-sign-in",[authMiddleware], (req, res) => authController.otpLogin(req, res));
+app.get("/whois",[tokenMiddleware,authMiddleware], (req, res) => authController.whois(req, res));
+app.post("/update-password",[tokenMiddleware,authMiddleware], (req, res) => authController.updatePassword(req, res));
 
 //API Configurations
-app.get("/apiis",[apiKeyMiddleware], (req, res) => authController.apiis(req, res));
+app.get("/apiis",[tokenMiddleware,authMiddleware,apiKeyMiddleware], (req, res) => authController.apiis(req, res));
 
-app.post("/revoke-api",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.handleTokenRevoke(req, res));
+app.post("/revoke-api",[tokenMiddleware,authMiddleware,apiKeyMiddleware], (req, res) => authController.handleTokenRevoke(req, res));
 
-app.get("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.getApiWebsites(req, res));
-app.post("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.saveApiWebsite(req, res));
-app.patch("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.updateApiWebsite(req, res));
-app.delete("/api-websites",[tokenMiddleware,apiKeyMiddleware], (req, res) => authController.deleteApiWebsite(req, res));
+app.get("/api-websites",[tokenMiddleware,authMiddleware,apiKeyMiddleware], (req, res) => authController.getApiWebsites(req, res));
+app.post("/api-websites",[tokenMiddleware,authMiddleware,apiKeyMiddleware], (req, res) => authController.saveApiWebsite(req, res));
+app.patch("/api-websites",[tokenMiddleware,authMiddleware,apiKeyMiddleware], (req, res) => authController.updateApiWebsite(req, res));
+app.delete("/api-websites",[tokenMiddleware,authMiddleware,apiKeyMiddleware], (req, res) => authController.deleteApiWebsite(req, res));
 
 /* end of backend routes */
 app.use(function (req, res, next) {
