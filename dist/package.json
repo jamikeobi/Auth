@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node loader.cjs",
     "gitdeploy": "git add .;git commit -m 'deploying build';git push;",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider ng build",
     "deploy": "git add . git commit -m `deploying build` git push;",
     "test": "echo \"Error: no sparkling-green-logo-rectangle.PNG test specified\" && exit 1"
   },

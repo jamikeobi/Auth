@@ -9,8 +9,6 @@ import { RegisterComponent } from './register/register.component';
 import { ForgotComponent } from './forgot/forgot.component';
 import { LandingComponent } from './landing/landing.component';
 import { PartnerComponent } from './partner/partner.component';
-
-
 @NgModule({
   declarations: [
     IndexComponent,

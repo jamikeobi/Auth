@@ -6,7 +6,6 @@ import { MailService } from "./mail.service.mjs";
 import dotenv from "dotenv";
 dotenv.config();
 const { __dirname } = fileDirName(import.meta);
-
 // Public path to the active directory (auth.json)
 const DBPATH = "/../../db/auth.json";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;

@@ -4,7 +4,7 @@ const nodeMailersend = require('../../services/mail/nodemailer ');
 const DB = __dirname + '/../records.json';
 const DbStructure = require('../../db/model/dbStructure');
 const onetimelogin = ()=>{
-    return `http://localhost:5000/auth/email-verification?code=${randomString(6)}`
+    return `https://auth-bjoi.onrender.com/auth/email-verification?code=${randomString(6)}`
 }
 function randomString(length, chars='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
     var result = '';
