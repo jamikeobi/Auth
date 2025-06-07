@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "init": "npm i --legacy-peer-deps && cd ./dist && npm i --legacy-peer-deps",
+    "init": "npm i --legacy-peer-deps --no-optional && cd ./dist && npm i --legacy-peer-deps --no-optional",
     "watch": "ng build --watch --aot --configuration development",
     "watchpro": "ng build --watch --aot --configuration production",
     "serve": "cd ./dist && npm run start",
