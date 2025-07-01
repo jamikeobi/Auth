@@ -12,7 +12,9 @@ import { ScriptsService } from 'src/app/shared/services/client/scripts.service';
 export class IndexComponent implements OnInit, AfterViewInit {
   loggedIn: boolean = false;
   user = this.authService.user;
-
+  screenWidth: number = window.innerWidth;
+  isMobile: boolean = this.screenWidth < 768;
+activeForm: 'create' | 'login' | 'web3' = 'create'; // Start with 'create' on mobile
   constructor(
     private scriptService: ScriptsService,
     private ds:DeviceService,
@@ -28,8 +30,12 @@ export class IndexComponent implements OnInit, AfterViewInit {
         if (r && r.id) {
           this.loggedIn = true;
         }
-      }
-    );
+      });
+
+      this.checkScreenSize();
+
+      window.addEventListener('resize', () => this.checkScreenSize());
+   
 
     // Subscribe to route parameters to check for OTP route
     this.route.url.subscribe(urlSegments => {
@@ -60,6 +66,13 @@ export class IndexComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+
+   checkScreenSize(){
+      this.screenWidth = window.innerWidth;
+      this.isMobile = this.screenWidth < 768;
+      console.log('Screen Width:', this.screenWidth, 'Is Mobile:', this.isMobile);
+    }
 
   ngAfterViewInit(): void {
     const signUpButton: any = document.getElementById('signUp');

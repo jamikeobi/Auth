@@ -1,116 +1,123 @@
-<form [formGroup]="loginForm" (ngSubmit)="submit()" autocomplete="off">
-  <h1 *ngIf="!user">Sign in</h1>
+<form [formGroup]="loginForm" (ngSubmit)="submit()" autocomplete="off" class="form-container"
+  style="margin-bottom: 0px !important; margin-top: 0px !important;">
+  <h1 *ngIf="!user" class="header1" style="margin-top: 0px !important;">Sign in</h1>
   <h1 *ngIf="user && user.status==1">Two Factor</h1>
   <span *ngIf="!user && !isOtpLogin">using email and password</span>
   <span *ngIf="!user && isOtpLogin">Enter your email to receive a login link</span>
   <span *ngIf="user && user.status==1">Check {{getMaskedEmail(user.email)}} for verification code</span>
 
   <div class="mb-3" *ngIf="!user && !otpSuccess">
-    <p class="form-label text-left">Email</p>
-    <input
-      type="email"
-      placeholder="Email"
-      class="form-control"
+    <!-- <p class="form-label text-left">Email</p> -->
+    <input type="email" placeholder="Email" class="form-control"
       [ngClass]="{ 'error-border': loginForm.get('email')?.invalid && loginForm.get('email')?.touched }"
-      formControlName="email"
-      autocomplete="off"
-    />
+      formControlName="email" autocomplete="off" style="width: 100% !important;" />
+    <!-- Email -->
+    <!-- <div class="input-group mb-3">
+      <span class="input-group-text bg-light"><i class="fa fa-envelope" style="color: #FF4B2B !important;"></i></span>
+      <input type="email" placeholder="Email" class="form-control"
+        [ngClass]="{ 'error-border': loginForm.get('email')?.invalid && loginForm.get('email')?.touched }"
+        formControlName="email" autocomplete="off" />
+    </div> -->
     <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="text-danger">
       Please enter a valid email.
     </div>
-    <!-- Link to switch back to email login during OTP login -->
-    <p *ngIf="isOtpLogin" class="text-right spasi mt-2">
-      <a href="javascript:void(0)" (click)="resetToDefaultLogin()" class="maxwidth">Back to Email and Password Login</a>
-    </p>
-  </div>
 
-  <!-- Password Input for non-@auth.com emails -->
-  <div *ngIf="!user && !isAuthEmail() && !isOtpLogin">
-    <div class="mb-3">
-      <p class="form-label text-left">Password</p>
-      <input
-        placeholder="Password"
-        class="form-control"
-        [ngClass]="{ 'error-border': loginForm.get('password')?.invalid && loginForm.get('password')?.touched }"
-        formControlName="password"
-        [type]="passwordVisibility!='Show' ? 'text' : 'password'"
-        autocomplete="off"
-      />
+
+    <!-- Password Input for non-@auth.com emails -->
+    <div *ngIf="!user && !isAuthEmail() && !isOtpLogin">
+      <div class="mb-3">
+        <!-- <p class="form-label text-left">Password</p> -->
+        <div class="password-input-container">
+          <input placeholder="Password" class="form-control" id="passwordInput" [ngClass]="{
+          'error-border':
+            loginForm.get('password')?.invalid &&
+            loginForm.get('password')?.touched
+        }" formControlName="password" [type]="passwordVisible ? 'text' : 'password'" autocomplete="off"
+            style="width: 100% !important" />
+          <span class="password-toggle" (click)="togglePasswordVisibility()" *ngIf="!passwordVisible">
+            <i class="fa fa-eye-slash" id="passwordToggleIcon"></i>
+          </span>
+          <span class="password-toggle" (click)="togglePasswordVisibility()" *ngIf="passwordVisible">
+            <i class="fa fa-eye" id="passwordToggleIcon"></i>
+          </span>
+        </div>
+      </div>
       <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger">
-        Password must be at least 6 characters, include one uppercase, one number, and one special character.
+        Password must be at least 6 characters, include one uppercase, one number,
+        and one special character.
+      </div>
+
+    </div>
+
+    <!-- Word and Position Inputs for @auth.com emails -->
+    <div *ngIf="!user && isAuthEmail() && !isOtpLogin">
+      <div class="mb-3">
+        <p class="form-label text-left">Password</p>
+        <input type="text" placeholder="Word (from 12-word phrase)" class="form-control"
+          [ngClass]="{ 'error-border': loginForm.get('word')?.invalid && loginForm.get('word')?.touched }"
+          formControlName="word" maxlength="100" autocomplete="off" />
+        <div *ngIf="loginForm.get('word')?.invalid && loginForm.get('word')?.touched" class="text-danger">
+          Please enter a valid word.
+        </div>
+      </div>
+      <div class="mb-3">
+        <select class="form-select" formControlName="position"
+          [ngClass]="{ 'error-border': loginForm.get('position')?.invalid && loginForm.get('position')?.touched }">
+          <option value="" disabled>Select position (1-12)</option>
+          <option *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="i">{{i}}</option>
+        </select>
+        <div *ngIf="loginForm.get('position')?.invalid && loginForm.get('position')?.touched" class="text-danger">
+          Please select a valid position.
+        </div>
       </div>
     </div>
-    <p class="text-right spasi">
-      <a href="javascript:void()" (click)="togglepasswordVisibility()" class="maxwidth">{{passwordVisibility}} Password</a>
-    </p>
-    <p class="text-right spasi mt-2">
-      <a href="javascript:void()" (click)="otpLogin()" class="maxwidth">OTP Login</a>
-    </p>
-  </div>
 
-  <!-- Word and Position Inputs for @auth.com emails -->
-  <div *ngIf="!user && isAuthEmail() && !isOtpLogin">
-    <div class="mb-3">
-      <p class="form-label text-left">Password</p>
-      <input
-        type="text"
-        placeholder="Word (from 12-word phrase)"
-        class="form-control"
-        [ngClass]="{ 'error-border': loginForm.get('word')?.invalid && loginForm.get('word')?.touched }"
-        formControlName="word"
-        maxlength="100"
-        autocomplete="off"
-      />
-      <div *ngIf="loginForm.get('word')?.invalid && loginForm.get('word')?.touched" class="text-danger">
-        Please enter a valid word.
+    <!-- OTP Success Message -->
+    <div *ngIf="!user && isOtpLogin && otpSuccess" class="alert alert-success">
+      A login link has been sent to {{loginForm.get('email')?.value}}. Please check your email.
+      <p><a href="javascript:void(0)" (click)="resetToDefaultLogin()">Back to Email and Password Login</a></p>
+    </div>
+
+    <!-- First Time User Checkbox -->
+    <div id="first-time-section" *ngIf="!user && !isOtpLogin">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+        <!-- OTP Login -->
+        <p id="otp-login-link" class="mb-0">
+          <a href="javascript:void(0)" (click)="otpLogin()" class="maxwidth" style="color: #ff4553;">OTP Login</a>
+        </p>
+
+        <!-- First Time User Checkbox -->
+        <label id="first-time-label" title="Click to create an account" class="d-flex align-items-center mb-0">
+          <input type="checkbox" formControlName="isFirstTimeUser" class="me-2" />
+          <span class="mb-0">First Time User?</span>
+        </label>
+
       </div>
     </div>
-    <div class="mb-3">
-      <select
-        class="form-select"
-        formControlName="position"
-        [ngClass]="{ 'error-border': loginForm.get('position')?.invalid && loginForm.get('position')?.touched }"
-      >
-        <option value="" disabled>Select position (1-12)</option>
-        <option *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="i">{{i}}</option>
-      </select>
-      <div *ngIf="loginForm.get('position')?.invalid && loginForm.get('position')?.touched" class="text-danger">
-        Please select a valid position.
+
+
+
+    <div class="mb-3" *ngIf="user && user.status==0">
+      <input type="number" placeholder="Code" class="form-control"
+        [ngClass]="{ 'error-border': loginForm.get('code')?.invalid && loginForm.get('code')?.touched }"
+        formControlName="code" />
+      <div *ngIf="loginForm.get('code')?.invalid && loginForm.get('code')?.touched" class="text-danger">
+        Please enter a valid code.
       </div>
     </div>
+
+    <button type="submit" *ngIf="!user" [disabled]="loginForm.invalid" class="btn btn-primary">Sign In</button>
+    <button type="button" (click)="verify()" *ngIf="user && user.status==0" [disabled]="loginForm.get('code')?.invalid"
+      class="btn btn-primary">Verify</button>
+    <a href="javascript:void(0)" (click)="reset()" *ngIf="user">Change Email</a>
   </div>
 
-  <!-- OTP Success Message -->
-  <div *ngIf="!user && isOtpLogin && otpSuccess" class="alert alert-success">
-    A login link has been sent to {{loginForm.get('email')?.value}}. Please check your email.
-    <p><a href="javascript:void(0)" (click)="resetToDefaultLogin()">Back to Email and Password Login</a></p>
-  </div>
 
-  <!-- First Time User Checkbox -->
-  <div class="checkbox-container" *ngIf="!user && !isOtpLogin">
-    <label title="Click to create an account">
-      <input
-        type="checkbox"
-        formControlName="isFirstTimeUser"
-      />
-      First Time User?
-    </label>
-  </div>
+  <!-- Link to switch back to email login during OTP login -->
+  <p *ngIf="isOtpLogin" class="text-right spasi mt-2">
+    <a href="javascript:void(0)" (click)="resetToDefaultLogin()" class="maxwidth"
+      style="color: #ff4553; font-weight: 100px;"><i class="fa fa-arrow-left"></i> Back</a>
+  </p>
 
-  <div class="mb-3" *ngIf="user && user.status==0">
-    <input
-      type="number"
-      placeholder="Code"
-      class="form-control"
-      [ngClass]="{ 'error-border': loginForm.get('code')?.invalid && loginForm.get('code')?.touched }"
-      formControlName="code"
-    />
-    <div *ngIf="loginForm.get('code')?.invalid && loginForm.get('code')?.touched" class="text-danger">
-      Please enter a valid code.
-    </div>
-  </div>
-
-  <button type="submit" *ngIf="!user" [disabled]="loginForm.invalid" class="btn btn-primary">Sign In</button>
-  <button type="button" (click)="verify()" *ngIf="user && user.status==0" [disabled]="loginForm.get('code')?.invalid" class="btn btn-primary">Verify</button>
-  <a href="javascript:void(0)" (click)="reset()" *ngIf="user">Change Email</a>
 </form>

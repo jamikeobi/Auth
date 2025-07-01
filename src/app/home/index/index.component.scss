@@ -2,7 +2,7 @@
   color:#ffbd30
 }
 .butt {
-  background-color: #FFB30E;
+  background-color: #FFB30E !important;
 }
 .org_text{
   color: #FFB30E;
@@ -15,4 +15,163 @@
 
 .mt-10{
   margin-top: 50px !important;
+}
+
+
+// Form Styling
+// Add any additional styles for the form here
+.form-container{
+  margin-bottom: 100px !important;
+}
+
+.link-questions{
+  position: absolute !important;
+  top: -500px !important;
+}
+
+.h1{
+  font-size: 1.5rem;
+}
+/* Sign-up form container styling */
+.sign-up-inputs {
+  width: 100%;
+  margin: 50px auto;
+  padding: 30px;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: none !important;
+}
+.sign-up-inputs input:focus{
+  border-color: #FF4B2B !important;
+}
+/* Input group icon */
+.sign-up-inputs .input-group-text {
+  width: 45px;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-right: none !important;
+}
+.sign-up-inputs i {
+  color: #FF4B2B !important;
+  font-size: 18px;
+}
+/* Input fields */
+.sign-up-inputs .form-control {
+  height: 45px;
+  font-size: 16px;
+}
+
+/* ------------------------------- */
+/* Responsive adjustments for <768px */
+@media (max-width: 768px) {
+  .sign-up-inputs {
+    padding: 25px 20px;
+    margin: 40px 15px;
+  }
+
+  .sign-up-inputs .form-control {
+    font-size: 15px;
+    height: 42px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 40px;
+  }
+}
+
+/* Responsive adjustments for <576px */
+@media (max-width: 576px) {
+  .sign-up-inputs {
+    padding: 20px 15px;
+    margin: 30px 10px;
+  }
+
+  .sign-up-inputs .form-control {
+    font-size: 14px;
+    height: 40px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 38px;
+    font-size: 14px;
+  }
+}
+
+/* Responsive adjustments for <400px */
+@media (max-width: 400px) {
+  .sign-up-inputs {
+    padding: 15px 10px;
+    margin: 25px 5px;
+  }
+
+  .sign-up-inputs .form-control {
+    font-size: 13px;
+    height: 38px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 36px;
+    font-size: 13px;
+  }
+}
+
+/* Responsive adjustments for <=320px */
+@media (max-width: 320px) {
+  .sign-up-inputs .form-control {
+    font-size: 12px;
+    height: 36px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 34px;
+    font-size: 12px;
+  }
+}
+
+
+
+// Mobile form styling
+.mobile-forms {
+  max-height: 500px;
+  margin-top: 0px !important;
+  max-width: 100%;
+  padding: 0 1rem;
+
+  .mobile-form-section {
+    padding-bottom: 1rem;
+  }
+
+  .small-form-link {
+    font-size: 0.95rem;
+    color: #333;
+
+    a {
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .social-container a {
+    color: #fff;
+    background-color: #ff4553;
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .btn{
+    background-color: #ff4553;
+    border: none;
+  }
+
+  .link-primary{
+    color: #ff4553 !important;
+  }
 }

@@ -5,6 +5,7 @@ import { LandingComponent } from './landing/landing.component';
 import { AuthGuard } from '../shared/guards/auth/auth.guard';
 import { GuestGuard } from '../shared/guards/auth/guest.guard';
 import { PartnerComponent } from './partner/partner.component';
+import { LoginComponent } from './login/login.component';
 const routes: Routes = [
   {
     path: '',
@@ -36,6 +37,11 @@ const routes: Routes = [
     component: PartnerComponent,
     // canActivate: [AuthGuard]
   },
+  {
+    path: 'logins',
+    component: LoginComponent,
+    canActivate: [GuestGuard]
+  }
 
 ];
 

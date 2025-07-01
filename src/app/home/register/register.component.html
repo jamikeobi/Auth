@@ -1,4 +1,4 @@
-<form action="#">
+<form action="#" style="margin-top: 0px !important; margin-bottom: 0px !important;">
   <div *ngIf="!showMetaMaskCard">
     <h1 *ngIf="!user">Web3 Login</h1>
     <button (click)="submit()" *ngIf="!user">Sign In</button>
@@ -64,7 +64,7 @@
         </li>
       </ul>
       <!-- Retry Button -->
-      <button class="btn btn-primary mt-3" (click)="retry()">
+      <button class="btn mt-3" (click)="retry()">
         Return and Retry
       </button>
     </div>

@@ -23,13 +23,206 @@
   margin-top: 4px;
 }
 
+.header1{
+  color: black;
+}
+.container{
+  box-shadow: none !important;
+}
+
+
+// Check Box and OTP Login Styling  
+#first-time-section {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+#first-time-label span{
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #333;
+  vertical-align: middle;
+  transform: translateY(10px) !important; /* optional: fine-tune alignment */
+}
+
+#first-time-label input[type="checkbox"] {
+  margin: 0;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+#otp-login-link a {
+  // color: #ff4553;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+#otp-login-link a:hover {
+  cursor: pointer;
+  // text-decoration: underline;
+}
+
+
+/* Sign-up form container styling */
+.sign-up-inputs {
+  width: 100%;
+  margin: 50px auto;
+  padding: 30px;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: none !important;
+}
+.sign-up-inputs input:focus{
+  border-color: #ff4553 !important;
+}
+/* Input group icon */
+.sign-up-inputs .input-group-text {
+  width: 45px;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-right: none !important;
+}
+.sign-up-inputs i {
+  color: #ff4553 !important;
+  font-size: 18px;
+}
+/* Input fields */
+.sign-up-inputs .form-control {
+  height: 45px;
+  font-size: 16px;
+}
+
+// Input group
+.spasi {
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+/* Style for the arrow-left icon in the "Back" link */
+.spasi a .fa-arrow-left {
+  margin-right: 5px; /* Adds a small space between the icon and the text */
+  /* You can add more styles here if needed, for example: */
+  color: #ff4553; 
+  font-weight: bold;
+  font-size: 0.9em;
+  vertical-align: middle;
+}
+
+/* If the .spasi class is not unique enough, you can be more specific: */
+/*
+p.spasi a.maxwidth .fa-arrow-left {
+    margin-right: 5px;
+    // ... other styles
+}
+*/
+.form-control {
+  width: 100% !important;
+}
+
+
+// Password Styling
+.password-input-container {
+  position: relative;
+  width: 100% !important; /* Ensure the container takes full width */
+}
+
+.password-input-container input {
+  padding-right: 40px; /* Make space for the icon */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px; /* Adjust as needed for spacing from the right */
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888; /* Adjust icon color */
+  font-size: 18px; /* Adjust icon size */
+}
+
+/* ------------------------------- */
+/* Responsive adjustments for <768px */
+@media (max-width: 768px) {
+  .sign-up-inputs {
+    padding: 25px 20px;
+    margin: 40px 15px;
+  }
+
+  .sign-up-inputs .form-control {
+    font-size: 15px;
+    height: 42px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 40px;
+  }
+}
+
+/* Responsive adjustments for <576px */
+@media (max-width: 576px) {
+  .sign-up-inputs {
+    padding: 20px 15px;
+    margin: 30px 10px;
+  }
+
+  .sign-up-inputs .form-control {
+    font-size: 14px;
+    height: 40px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 38px;
+    font-size: 14px;
+  }
+}
+
+/* Responsive adjustments for <400px */
+@media (max-width: 400px) {
+  .sign-up-inputs {
+    padding: 15px 10px;
+    margin: 25px 5px;
+  }
+
+  .sign-up-inputs .form-control {
+    font-size: 13px;
+    height: 38px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 36px;
+    font-size: 13px;
+  }
+}
+
+/* Responsive adjustments for <=320px */
+@media (max-width: 320px) {
+  .sign-up-inputs .form-control {
+    font-size: 12px;
+    height: 36px;
+  }
+
+  .sign-up-inputs .input-group-text {
+    width: 34px;
+    font-size: 12px;
+  }
+}
+
+
+
 // Ensure this matches your existing form styling
 form {
+  .login-form {
+  // margin-bottom: 100px !important; 
+}
+
+
   input[type="email"],
-  input[type="password"],
   input[type="number"] {
-    width: 100%;
-    padding: 10px;
+    // padding: 10px;
     margin: 8px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -38,20 +231,32 @@ form {
   button {
     width: 100%;
     padding: 10px;
-    margin: 10px 0;
+    // margin: 10px 0;
+    margin-bottom: 0px !important;
     background-color: #ff4553;
     color: white;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: pointer !important;
   }
 
   .error-border {
     border-color: red;
   }
 }
+
+// Form Styling
+// Add any additional styles for the form here
+
+
+
 .maxwidth{
+  margin: 0px !important;
   width: 100%;
   text-align: right;
-  text-decoration:overline;
+  // text-decoration:overline;
+}
+
+.text-danger{
+  font-size: .8em;
 }

@@ -13,6 +13,10 @@ import { environment } from 'src/environments/environment';
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   passwordVisibility: string = 'Show';
+  passwordVisible: boolean = false; // password visibility toggle
+
+    screenWidth: number = window.innerWidth;
+    isMobile: boolean = this.screenWidth < 768;
   user: any = null;
   isOtpLogin: boolean = false;
   otpSuccess: boolean = false;
@@ -68,8 +72,18 @@ export class LoginComponent implements OnInit {
       }
       this.loginForm.get('code')?.updateValueAndValidity();
     });
+    
+     this.checkScreenSize();
+
+      window.addEventListener('resize', () => this.checkScreenSize());
+   
   }
 
+  checkScreenSize(){
+      this.screenWidth = window.innerWidth;
+      this.isMobile = this.screenWidth < 768;
+      console.log('Screen Width:', this.screenWidth, 'Is Mobile:', this.isMobile);
+    }
   isAuthEmail(email: string = this.loginForm.get('email')?.value): boolean {
     return email.toLowerCase().endsWith(environment.domain);
   }
@@ -85,7 +99,7 @@ export class LoginComponent implements OnInit {
 
     if (this.isOtpLogin) {
       this.deviceService.showSpinner();
-      this.authService.requestOtpLogin({email: formValue.email}).subscribe({
+      this.authService.requestOtpLogin({ email: formValue.email }).subscribe({
         next: (res: any) => {
           console.log(res);
           this.otpSuccess = true;
@@ -111,14 +125,14 @@ export class LoginComponent implements OnInit {
     }
 
     this.deviceService.showSpinner();
-        // Fetch IP address
-        let ip = '0.0.0.0'; // Fallback IP
-        try {
-          ip = await this.deviceService.getIp().toPromise();
-        } catch (err) {
-          console.error('Failed to fetch IP:', err);
-          this.deviceService.oErrorNotification('Error', 'Failed to fetch IP address, using fallback IP');
-        }
+    // Fetch IP address
+    let ip = '0.0.0.0'; // Fallback IP
+    try {
+      ip = await this.deviceService.getIp().toPromise();
+    } catch (err) {
+      console.error('Failed to fetch IP:', err);
+      this.deviceService.oErrorNotification('Error', 'Failed to fetch IP address, using fallback IP');
+    }
     this.authService.login({
       email: formValue.email,
       password: loginPassword,
@@ -187,8 +201,38 @@ export class LoginComponent implements OnInit {
     this.passwordVisibility = 'Show';
   }
 
-  togglepasswordVisibility(): void {
+  togglePasswordVisibility(): void {
     this.passwordVisibility = this.passwordVisibility === 'Show' ? 'Hide' : 'Show';
+    this.passwordVisible = !this.passwordVisible;
+
+
+    // password-toggle.js
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if the elements exist before trying to access them
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordToggleIcon = document.getElementById('passwordToggleIcon');
+
+    if (passwordInput && passwordToggleIcon) {
+        passwordToggleIcon.addEventListener('click', function() {
+            // Get the current type of the password input
+            const currentType = passwordInput.getAttribute('type');
+
+            // Toggle the type of the input
+            if (currentType === 'password') {
+                passwordInput.setAttribute('type', 'text');
+                passwordToggleIcon.classList.remove('fa-eye-slash');
+                passwordToggleIcon.classList.add('fa-eye');
+            } else {
+                passwordInput.setAttribute('type', 'password');
+                passwordToggleIcon.classList.remove('fa-eye');
+                passwordToggleIcon.classList.add('fa-eye-slash');
+            }
+        });
+    } else {
+        // console.warn('Password input or toggle icon not found. Toggle functionality will not work.');
+    }
+});
   }
 
   otpLogin(): void {
