@@ -8,3 +8,80 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
+
+// Button Styling
+
+/* Default font size */
+.responsive-retry-btn {
+  font-size: 1rem;
+}
+
+/* Tablets and small screens */
+@media (max-width: 767px) {
+  .responsive-retry-btn {
+    font-size: 0.9rem;
+  }
+}
+
+/* Phones */
+@media (max-width: 575px) {
+  .responsive-retry-btn {
+    font-size: 0.85rem;
+  }
+}
+
+/* Small phones (e.g. 320px) */
+@media (max-width: 400px) {
+  .responsive-retry-btn {
+    font-size: 0.8rem;
+  }
+}
+
+// Mobile form styling
+.mobile-forms {
+  margin-top: 0px !important;
+  width: 20rem;
+  padding: 0 1rem;
+  overflow: auto;
+
+  .mobile-form-section {
+    padding-bottom: 1rem;
+  }
+
+  .mobile-form-section {
+    margin-top: 0px !important;
+  }
+
+  .small-form-link {
+    font-size: 0.95rem;
+    color: #333;
+
+    a {
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .social-container a {
+    color: #fff;
+    background-color: #ff4553;
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .btn{
+    background-color: #ff4553;
+    border: none;
+  }
+
+  .link-primary{
+    color: #ff4553 !important;
+  }
+}
